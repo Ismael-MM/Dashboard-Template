@@ -71,4 +71,18 @@ export default defineConfig([
   },
 ])
 ```
-# Dashboard-Template
+# Estructura de carpetas
+
+```js
+src/
+├── api/              # Configuración de Axios/Fetch e interceptores (JWT)
+├── components/       # Componentes UI reutilizables (Botones, inputs, tablas)
+├── features/         # Lógica por módulos (Aquí vive la conexión real con NestJS)
+│   ├── auth/         # Login, registro, hooks de sesión
+│   └── users/        # Gestión de usuarios (componentes específicos, servicios)
+├── layouts/          # Estructuras de página (MainLayout con Sidebar y Outlet)
+├── pages/            # Vistas que se asocian a las rutas (limpias, solo orquestan)
+├── router/           # Configuración de createBrowserRouter
+├── types/            # Interfaces TypeScript que coincidan con tus DTOs de NestJS
+└── main.tsx          # Punto de entrada con el RouterProvider
+```
