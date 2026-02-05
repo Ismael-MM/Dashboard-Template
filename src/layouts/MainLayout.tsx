@@ -1,10 +1,11 @@
 import { Outlet } from "react-router";
 
+
 export default function MainLayout() {
   return(
     <div style={{ display: "flex", minHeight: "100vh" }}>
       {/* Sidebar - Podrías moverlo a src/components/Sidebar.tsx después */}
-      <aside style={{ width: "250px", background: "#1a1a1a", color: "white", padding: "1rem" }}>
+      <aside className=" w-62.5" style={{ background: "#1a1a1a", color: "white", padding: "1rem" }}>
         <nav>
           <h3>Admin Pro</h3>
           <ul>

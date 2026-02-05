@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router";
+import { Button } from "@/components/ui/button";
 import MainLayout from "@/layouts/MainLayout";
 
 export const router = createBrowserRouter([
@@ -16,7 +17,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <div>Lista de Usuarios</div>,
+        element: <Button> Hola </Button>,
       },
     ],
   },
