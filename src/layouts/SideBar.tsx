@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router";
+
 import {
   ChartPieIcon,
   ChartSplineIcon,
@@ -17,15 +19,18 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
 
+
 const SidebarPage = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate("/login");
+  };
+  
   return (
     <SidebarProvider className="w-full">
       <Sidebar>
@@ -42,15 +47,21 @@ const SidebarPage = () => {
                             src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-5.png"
                             alt="Hallie Richards"
                           />
-                          <AvatarFallback className="text-sm font-semibold">HR</AvatarFallback>
+                          <AvatarFallback className="text-sm font-semibold">
+                            HR
+                          </AvatarFallback>
                         </Avatar>
                         <span className="absolute -right-1 -bottom-1 inline-flex size-3.5 items-center justify-center rounded-full bg-green-500 dark:bg-green-400 border-2 border-white dark:border-slate-900">
                           <CheckIcon className="size-2.5 text-white" />
                         </span>
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-semibold">Peter Parker</span>
-                        <span className="text-xs text-muted-foreground">Admin</span>
+                        <span className="text-sm font-semibold">
+                          Peter Parker
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Admin
+                        </span>
                       </div>
                     </div>
                   </SidebarMenuButton>
@@ -90,7 +101,10 @@ const SidebarPage = () => {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <Button className="m-5 text-base text-gray-500 bg-neutral-primary border border-gray-500 hover:bg-gray-200 hover:text-gray-700">
+        <Button
+          onClick={handleLogout}
+          className="m-5 text-base text-gray-500 bg-neutral-primary border border-gray-500 hover:bg-gray-200 hover:text-gray-700"
+        >
           Log out
         </Button>
       </Sidebar>
