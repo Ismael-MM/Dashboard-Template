@@ -1,10 +1,11 @@
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import {
   ChartPieIcon,
   ChartSplineIcon,
   UsersIcon,
   CheckIcon,
+  type LucideIcon,
 } from "lucide-react";
 
 import {
@@ -23,6 +24,29 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
 
+interface MenuItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+};
+
+const menuItems: MenuItem[] = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: ChartSplineIcon,
+  },
+  {
+    title: "Users",
+    url: "/users",
+    icon: UsersIcon,
+  },
+  {
+    title: "Engagement Metrics",
+    url: "#",
+    icon: ChartPieIcon,
+  },
+];
 
 const SidebarPage = () => {
   const navigate = useNavigate();
@@ -73,30 +97,18 @@ const SidebarPage = () => {
             <SidebarGroupLabel>Pages</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#">
-                      <ChartSplineIcon className="!w-5 !h-5" />
-                      <span className="ml-1 text-base">Dashboard</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#">
-                      <UsersIcon className="!w-5 !h-5" />
-                      <span className="ml-1 text-base">Users</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="#">
-                      <ChartPieIcon className="!w-5 !h-5" />
-                      <span className="ml-1 text-base">Engagement Metrics</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {menuItems.map((item) =>{
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton asChild>
+                        <Link to={item.url}>
+                          <item.icon className="!w-5 !h-5" />
+                          <span className="ml-1 text-base">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
