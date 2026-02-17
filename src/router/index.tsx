@@ -1,8 +1,8 @@
-import { createBrowserRouter, Navigate } from "react-router";
-import { Button } from "@/components/ui/button";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
-import LoginPage from "@/pages/auth/login";
-import SignupPage from "@/pages/auth/signup";
+import LoginPage from "@/Pages/auth/login";
+import SignupPage from "@/Pages/auth/signup";
+import UsersPage from "@/Pages/users/users";
 
 export const router = createBrowserRouter([
   {
@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <Button> Hola </Button>,
+        element: <UsersPage />,
       },
     ],
   },
