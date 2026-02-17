@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import {
   ChartPieIcon,
@@ -73,20 +74,22 @@ const SidebarPage = () => {
             <SidebarGroupLabel>Pages</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                {/* Dashboard Link */}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href="#">
+                    <Link to="/dashboard">
                       <ChartSplineIcon className="!w-5 !h-5" />
                       <span className="ml-1 text-base">Dashboard</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {/* Users Link */}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href="#">
+                    <Link to="/users">
                       <UsersIcon className="!w-5 !h-5" />
                       <span className="ml-1 text-base">Users</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
