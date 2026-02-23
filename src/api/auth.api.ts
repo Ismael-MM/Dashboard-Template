@@ -1,7 +1,11 @@
 import api from './axios';
 
 export const loginUser = async (credentials: any) => {
-  const { data } = await api.post('/auth/login', credentials);
+  const payload = {
+    email: credentials.identifier,
+    password: credentials.password
+  }
+  const { data } = await api.post('/auth/login', payload);
 
   if (data.access_token) {
     localStorage.setItem('token', data.access_token);
