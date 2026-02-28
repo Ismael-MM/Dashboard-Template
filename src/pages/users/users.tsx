@@ -56,8 +56,7 @@ const columns: ColumnDef<User>[] = [
 export default function UsersPage() {
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-5">Users Table</h1>
-      <DataTable columns={columns} data={users} />
+      <DataTable columns={columns} data={users} title="Users Table" />
     </div>
   );
 }
