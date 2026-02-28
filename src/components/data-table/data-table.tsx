@@ -43,6 +43,7 @@ import {
   FileSpreadsheetIcon,
   Pencil,
   Trash2,
+  Plus,
 } from "lucide-react";
 
 import { useState } from "react"
@@ -146,10 +147,15 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="rounded-lg border shadow-sm overflow-hidden">
-      <div className="flex items-center justify-end space-x-2 p-4">
+      <div className="flex items-center justify-end space-x-2 px-6 py-4">
         <div className="flex-1">
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
+        {/* Botón para agregar nuevos registros */}
+        <Button className='bg-sky-600/10 text-sky-600 border border-sky-400 hover:bg-sky-600/20 focus-visible:ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:hover:bg-sky-400/20 dark:focus-visible:ring-sky-400/40'>
+          <Plus className='mr-1' />
+          Add
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant='outline' size='sm'>
@@ -221,22 +227,24 @@ export function DataTable<TData, TValue>({
               ))}
 
               {/* Acciones */}
-              <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex space-x-2">
-                {/* Editar */}
-                <Button variant="outline" size="icon">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                {/* Eliminar */}
-                <Button variant="destructive" size="icon">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div className="flex items-center space-x-2">
+                  {/* Editar */}
+                  <Button className="bg-yellow-500/10 text-yellow-500 border border-yellow-400 hover:bg-yellow-500/20 focus-visible:ring-yellow-500/20 dark:focus-visible:ring-yellow-500/40">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  {/* Eliminar */}
+                  <Button className="bg-destructive/10 text-destructive border border-red-400 hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       {/* Controles de paginación */}
-      <div className="flex items-center justify-between px-2">
+      <div className="flex items-center justify-between px-6 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getState().pagination.pageIndex + 1} de{" "}
           {table.getPageCount()} páginas
