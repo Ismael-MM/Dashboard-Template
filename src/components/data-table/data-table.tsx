@@ -1,5 +1,8 @@
 "use client"
 
+import * as XLSX from 'xlsx'
+import Papa from 'papaparse'
+
 import {
   type ColumnDef,
   flexRender,
@@ -35,18 +38,34 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  DownloadIcon,
+  FileTextIcon,
+  FileSpreadsheetIcon,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 import { useState } from "react"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  title: string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  title,
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = useState<SortingState>([])
@@ -60,8 +79,101 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
   })
 
+  const exportToCSV = () => {
+    const selectedRows = table.getSelectedRowModel().rows
+
+    const dataToExport =
+      selectedRows.length > 0
+        ? selectedRows.map(row => row.original)
+        : table.getFilteredRowModel().rows.map(row => row.original)
+
+    const csv = Papa.unparse(dataToExport, {
+      header: true
+    })
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+
+    link.setAttribute('href', url)
+    link.setAttribute('download', `${title}-export-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const exportToExcel = () => {
+    const selectedRows = table.getSelectedRowModel().rows
+
+    const dataToExport =
+      selectedRows.length > 0
+        ? selectedRows.map(row => row.original)
+        : table.getFilteredRowModel().rows.map(row => row.original)
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport)
+    const workbook = XLSX.utils.book_new()
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Payments')
+
+    const cols = [{ wch: 10 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }]
+
+    worksheet['!cols'] = cols
+
+    XLSX.writeFile(workbook, `${title}-export-${new Date().toISOString().split('T')[0]}.xlsx`)
+  }
+
+  const exportToJSON = () => {
+    const selectedRows = table.getSelectedRowModel().rows
+
+    const dataToExport =
+      selectedRows.length > 0
+        ? selectedRows.map(row => row.original)
+        : table.getFilteredRowModel().rows.map(row => row.original)
+
+    const json = JSON.stringify(dataToExport, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+
+    link.setAttribute('href', url)
+    link.setAttribute('download', `${title}-export-${new Date().toISOString().split('T')[0]}.json`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="rounded-lg border shadow-sm overflow-hidden">
+      <div className="flex items-center justify-end space-x-2 p-4">
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">{title}</h1>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant='outline' size='sm'>
+              <DownloadIcon className='mr-2' />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align='end'>
+            <DropdownMenuItem onClick={exportToCSV}>
+              <FileTextIcon className='mr-2 size-4' />
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={exportToExcel}>
+              <FileSpreadsheetIcon className='mr-2 size-4' />
+              Export as Excel
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={exportToJSON}>
+              <FileTextIcon className='mr-2 size-4' />
+              Export as JSON
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -84,6 +196,14 @@ export function DataTable<TData, TValue>({
                   )}
                 </TableHead>
               ))}
+
+              {/* Header para la columna de acciones */}
+              <TableHead
+                key={`${headerGroup.id}-actions`}
+                className="bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Acciones
+              </TableHead>
             </TableRow>
           ))}
         </TableHeader>
@@ -99,6 +219,18 @@ export function DataTable<TData, TValue>({
                   )}
                 </TableCell>
               ))}
+
+              {/* Acciones */}
+              <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex space-x-2">
+                {/* Editar */}
+                <Button variant="outline" size="icon">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                {/* Eliminar */}
+                <Button variant="destructive" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
