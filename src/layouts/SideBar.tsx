@@ -24,6 +24,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/features/auth/UseAuth";
 
 interface MenuItem {
   title: string;
@@ -51,8 +52,10 @@ const menuItems: MenuItem[] = [
 
 const SidebarPage = () => {
   const navigate = useNavigate();
+  const { user, logout} = useAuth();
 
-  const handleLogout = () => {
+  const handleLogout =  async () => {
+    await logout();
     navigate("/login");
   };
   

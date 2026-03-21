@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { loginUser } from "@/api/auth.api"
+import { useAuth } from "@/features/auth/UseAuth"
 
 export function LoginForm({
   className,
@@ -27,6 +27,7 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const { user, login} = useAuth()
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -34,7 +35,7 @@ export function LoginForm({
     setError(null);
 
     try {
-      await loginUser({ identifier, password })
+      await login({ identifier, password })
 
       navigate("/dashboard")
     } catch (error) {

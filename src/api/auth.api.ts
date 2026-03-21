@@ -7,10 +7,6 @@ export const loginUser = async (credentials: any) => {
   }
   const { data } = await api.post('/auth/login', payload);
 
-  if (data.access_token) {
-    localStorage.setItem('token', data.access_token);
-  }
-
   return data;
 }
 
@@ -29,10 +25,12 @@ export const registerUser = async (userData: any) => {
   return data;
 }
 
-export const logout = () => {
-  localStorage.removeItem('token');
+export const logoutUser = async () => {
+  await api.post('/auth/logout');
 };
 
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
-};
+export const getMe = async () => {
+  const { data } = await api.get('/auth/me');
+
+  return data;
+}

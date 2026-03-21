@@ -3,25 +3,31 @@ import MainLayout from "@/layouts/MainLayout";
 import LoginPage from "@/pages/auth/login";
 import SignupPage from "@/pages/auth/signup";
 import UsersPage from "@/pages/users/users";
+import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <MainLayout />,
+    element: <ProtectedRoute />,
     children: [
       {
-        index: true,
-        element: <Navigate to="/dashboard" replace />,
+        path: "/",
+        element: <MainLayout />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="/dashboard" replace />,
+          },
+          {
+            path: "dashboard",
+            element: <div>Métricas Principales (Conectar con NestJS)</div>,
+          },
+          {
+            path: "users",
+            element: <UsersPage />,
+          },
+        ],
       },
-      {
-        path: "dashboard",
-        element: <div>Métricas Principales (Conectar con NestJS)</div>,
-      },
-      {
-        path: "users",
-        element: <UsersPage />,
-      },
-    ],
+    ]
   },
   {
     path: "/login",
