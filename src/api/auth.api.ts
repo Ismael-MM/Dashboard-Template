@@ -1,6 +1,20 @@
 import api from './axios';
 
-export const loginUser = async (credentials: any) => {
+interface UserData {
+  username: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  nombre: string;
+  apellido: string;
+}
+
+interface Credentials {
+  identifier: string;
+  password: string;
+}
+
+export const loginUser = async (credentials: Credentials) => {
   const payload = {
     email: credentials.identifier,
     password: credentials.password
@@ -10,7 +24,7 @@ export const loginUser = async (credentials: any) => {
   return data;
 }
 
-export const registerUser = async (userData: any) => {
+export const registerUser = async (userData: UserData) => {
   const payload = {
     username: userData.username,
     email: userData.email,

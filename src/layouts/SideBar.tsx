@@ -52,7 +52,7 @@ const menuItems: MenuItem[] = [
 
 const SidebarPage = () => {
   const navigate = useNavigate();
-  const { user, logout} = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout =  async () => {
     await logout();
