@@ -1,6 +1,6 @@
 import { useState, type ComponentProps, type FormEvent } from "react"
 import { AxiosError } from "axios"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 
 import { registerUser } from "@/api/auth.api"
 import { cn } from "@/lib/utils"
@@ -20,9 +20,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Link, useNavigate } from "react-router-dom"
-import { use, useState } from "react"
-import { registerUser } from "@/api/auth.api"
 
 export function SignupForm({
   className,
