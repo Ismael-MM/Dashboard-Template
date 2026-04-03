@@ -176,8 +176,12 @@ export function UserFormSheet({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex max-h-[92vh] flex-col sm:max-h-[85vh]">
-          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col max-h-[92vh] sm:max-h-[85vh] w-full min-h-0"
+        >
+          {/* add bottom padding so the sticky footer doesn't overlap inputs */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5 min-h-0 pb-20 sm:pb-24">
             <FieldGroup>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
@@ -284,7 +288,7 @@ export function UserFormSheet({
             </FieldGroup>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 z-10 border-t bg-white/60 backdrop-blur-sm dark:bg-slate-900/60">
             <Button
               type="button"
               variant="outline"
