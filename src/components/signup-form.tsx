@@ -1,3 +1,8 @@
+import { useState, type ComponentProps, type FormEvent } from "react"
+import { AxiosError } from "axios"
+import { useNavigate } from "react-router-dom"
+
+import { registerUser } from "@/api/auth.api"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,6 +15,7 @@ import {
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -21,38 +27,58 @@ import { registerUser } from "@/api/auth.api"
 export function SignupForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
-  const [nombre, setNombre] = useState("")
-  const [apellido, setApellido] = useState("")
-  const [email, setEmail] = useState("")
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [passwordConfirm, setPasswordConfirm] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+}: ComponentProps<"div">) {
   const navigate = useNavigate()
+  const [form, setForm] = useState({
+    nombre: "",
+    apellido: "",
+    username: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+  })
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((current) => ({ ...current, [field]: value }))
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+
+    if (form.password !== form.passwordConfirm) {
+      setError("Las contraseñas no coinciden.")
+      return
+    }
 
     try {
+      setIsSubmitting(true)
       await registerUser({
-        username,
-        email,
-        password,
-        passwordConfirm,
-        nombre,
-        apellido
+        email: form.email.trim(),
+        username: form.username.trim(),
+        nombre: form.nombre.trim(),
+        apellido: form.apellido.trim(),
+        password: form.password,
+        passwordConfirm: form.passwordConfirm,
       })
+      navigate("/login", { replace: true })
+    } catch (err) {
+      const message =
+        err instanceof AxiosError
+          ? err.response?.data?.message
+          : null
 
-      navigate("/login")
-    } catch (error) {
-      const message = error.response?.data?.message || "Error al crear la cuenta"
-      setError(Array.isArray(message) ? message[0] : message)
+      setError(
+        Array.isArray(message)
+          ? message.join(", ")
+          : typeof message === "string"
+            ? message
+            : "No se pudo completar el registro."
+      )
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -73,37 +99,40 @@ export function SignupForm({
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Usuario</FieldLabel>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-              </Field>
-              <Field className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="name">Nombre</FieldLabel>
-                  <Input 
-                    id="name"
-                    type="text" 
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
+                  <FieldLabel htmlFor="nombre">Nombre</FieldLabel>
+                  <Input
+                    id="nombre"
+                    type="text"
+                    placeholder="John"
+                    value={form.nombre}
+                    onChange={(event) => updateField("nombre", event.target.value)}
                     required
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Apellido</FieldLabel>
-                  <Input 
-                    id="apellido" 
-                    type="text"  
-                    value={apellido}
-                    onChange={(e) => setApellido(e.target.value)}
-                    required 
+                  <FieldLabel htmlFor="apellido">Apellido</FieldLabel>
+                  <Input
+                    id="apellido"
+                    type="text"
+                    placeholder="Doe"
+                    value={form.apellido}
+                    onChange={(event) => updateField("apellido", event.target.value)}
+                    required
                   />
                 </Field>
+              </div>
+              <Field>
+                <FieldLabel htmlFor="username">Username</FieldLabel>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="johndoe"
+                  value={form.username}
+                  onChange={(event) => updateField("username", event.target.value)}
+                  required
+                />
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -111,20 +140,20 @@ export function SignupForm({
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={form.email}
+                  onChange={(event) => updateField("email", event.target.value)}
                   required
                 />
               </Field>
               <Field>
-                <Field className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field>
                     <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input 
-                      id="password" 
+                    <Input
+                      id="password"
                       type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={form.password}
+                      onChange={(event) => updateField("password", event.target.value)}
                       required
                     />
                   </Field>
@@ -132,21 +161,24 @@ export function SignupForm({
                     <FieldLabel htmlFor="confirm-password">
                       Confirm Password
                     </FieldLabel>
-                    <Input 
-                      id="confirm-password" 
-                      type="password" 
-                      value={passwordConfirm}
-                      onChange={(e) => setPasswordConfirm(e.target.value)}
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={form.passwordConfirm}
+                      onChange={(event) => updateField("passwordConfirm", event.target.value)}
                       required
                     />
                   </Field>
-                </Field>
+                </div>
                 <FieldDescription>
-                  Must be at least 8 characters long.
+                  Must be at least 6 characters long.
                 </FieldDescription>
               </Field>
               <Field>
-                <Button type="submit">Create Account</Button>
+                {error ? <FieldError>{error}</FieldError> : null}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating account..." : "Create Account"}
+                </Button>
                 <FieldDescription className="text-center">
                   Already have an account? <Link to="/login">Sign in</Link>
                 </FieldDescription>

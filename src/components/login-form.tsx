@@ -1,3 +1,8 @@
+import { useState, type ComponentProps, type FormEvent } from "react"
+import { AxiosError } from "axios"
+import { useNavigate } from "react-router-dom"
+
+import { loginUser } from "@/api/auth.api"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,6 +15,7 @@ import {
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -21,27 +27,39 @@ import { loginUser } from "@/api/auth.api"
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
-  const [identifier, setIdentifier] = useState("")
+}: ComponentProps<"div">) {
+  const navigate = useNavigate()
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
 
     try {
-      await loginUser({ identifier, password })
+      setIsSubmitting(true)
+      await loginUser({
+        email: email.trim(),
+        password,
+      })
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      const message =
+        err instanceof AxiosError
+          ? err.response?.data?.message
+          : null
 
-      navigate("/dashboard")
-    } catch (error) {
-      const message = error.response?.data?.message || "Error al iniciar sesión"
-      setError(Array.isArray(message) ? message[0] : message)
+      setError(
+        Array.isArray(message)
+          ? message.join(", ")
+          : typeof message === "string"
+            ? message
+            : "No se pudo iniciar sesión. Verifica tus credenciales."
+      )
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -68,9 +86,8 @@ export function LoginForm({
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  autoComplete="username"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   required
                 />
               </Field>
@@ -84,17 +101,18 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input 
+                <Input
                   id="password"
-                  type="password" required
+                  type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
                 />
               </Field>
               <Field>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Loggin in..." : "Login"}
+                {error ? <FieldError>{error}</FieldError> : null}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Logging in..." : "Login"}
                 </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link to="/register">Sign up</Link>

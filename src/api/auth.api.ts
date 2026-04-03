@@ -1,38 +1,50 @@
-import api from './axios';
+import api from "@/api/axios";
 
-export const loginUser = async (credentials: any) => {
-  const payload = {
-    email: credentials.identifier,
-    password: credentials.password
-  }
-  const { data } = await api.post('/auth/login', payload);
-
-  if (data.access_token) {
-    localStorage.setItem('token', data.access_token);
-  }
-
-  return data;
+export interface LoginPayload {
+  email: string;
+  password: string;
 }
 
-export const registerUser = async (userData: any) => {
-  const payload = {
-    username: userData.username,
-    email: userData.email,
-    password: userData.password,
-    passwordConfirm: userData.passwordConfirm,
-    nombre: userData.nombre,
-    apellido: userData.apellido,
-  }
-
-  const { data } = await api.post('/auth/register', payload);
-
-  return data;
+export interface RegisterPayload {
+  email: string;
+  username: string;
+  nombre: string;
+  apellido: string;
+  password: string;
+  passwordConfirm: string;
 }
 
-export const logout = () => {
-  localStorage.removeItem('token');
+export interface AuthUser {
+  id?: number;
+  userId?: number;
+  email: string;
+  username: string;
+}
+
+export const loginUser = async (credentials: LoginPayload) => {
+  const { data } = await api.post<{ user: AuthUser }>("/auth/login", credentials);
+  return data;
 };
 
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
+export const registerUser = async (payload: RegisterPayload) => {
+  const { data } = await api.post("/auth/register", payload);
+  return data;
+};
+
+export const getCurrentUser = async () => {
+  const { data } = await api.get<{ user: AuthUser | null }>("/auth/me");
+  return data;
+};
+
+export const logout = async () => {
+  await api.post("/auth/logout");
+};
+
+export const isAuthenticated = async () => {
+  try {
+    const { user } = await getCurrentUser();
+    return Boolean(user);
+  } catch {
+    return false;
+  }
 };
