@@ -1,19 +1,50 @@
-import api from './axios';
+import api from "@/api/axios";
 
-export const loginUser = async (credentials: any) => {
-  const { data } = await api.post('/auth/login', credentials);
-
-  if (data.access_token) {
-    localStorage.setItem('token', data.access_token);
-  }
-
-  return data;
+export interface LoginPayload {
+  email: string;
+  password: string;
 }
 
-export const logout = () => {
-  localStorage.removeItem('token');
+export interface RegisterPayload {
+  email: string;
+  username: string;
+  nombre: string;
+  apellido: string;
+  password: string;
+  passwordConfirm: string;
+}
+
+export interface AuthUser {
+  id?: number;
+  userId?: number;
+  email: string;
+  username: string;
+}
+
+export const loginUser = async (credentials: LoginPayload) => {
+  const { data } = await api.post<{ user: AuthUser }>("/auth/login", credentials);
+  return data;
 };
 
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
+export const registerUser = async (payload: RegisterPayload) => {
+  const { data } = await api.post("/auth/register", payload);
+  return data;
+};
+
+export const getCurrentUser = async () => {
+  const { data } = await api.get<{ user: AuthUser | null }>("/auth/me");
+  return data;
+};
+
+export const logout = async () => {
+  await api.post("/auth/logout");
+};
+
+export const isAuthenticated = async () => {
+  try {
+    const { user } = await getCurrentUser();
+    return Boolean(user);
+  } catch {
+    return false;
+  }
 };
