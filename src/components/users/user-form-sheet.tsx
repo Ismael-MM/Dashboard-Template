@@ -176,8 +176,8 @@ export function UserFormSheet({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex max-h-[85vh] flex-col">
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+        <form onSubmit={handleSubmit} className="flex max-h-[92vh] flex-col sm:max-h-[85vh]">
+          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
             <FieldGroup>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>

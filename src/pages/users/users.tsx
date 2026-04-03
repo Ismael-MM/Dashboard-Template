@@ -138,9 +138,9 @@ export default function UsersPage() {
 
   return (
     <>
-      <div className="container mx-auto space-y-4 py-10">
+      <div className="container mx-auto space-y-4 py-6 sm:space-y-5 sm:py-8 lg:py-10">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Users</h1>
           <p className="text-sm text-muted-foreground">
             Manage user records from the panel.
           </p>
@@ -149,14 +149,14 @@ export default function UsersPage() {
         {loadError ? (
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
             <div>{loadError}</div>
-            <Button variant="outline" className="mt-3" onClick={() => void loadData()}>
+            <Button variant="outline" className="mt-3 w-full sm:w-auto" onClick={() => void loadData()}>
               Retry
             </Button>
           </div>
         ) : null}
 
         {isLoading ? (
-          <div className="rounded-lg border bg-background px-6 py-10 text-sm text-muted-foreground">
+          <div className="rounded-lg border bg-background px-4 py-8 text-sm text-muted-foreground sm:px-6 sm:py-10">
             Loading users...
           </div>
         ) : (
