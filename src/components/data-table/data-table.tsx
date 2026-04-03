@@ -7,6 +7,7 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type SortingState,
@@ -41,12 +42,10 @@ import {
   DownloadIcon,
   FileTextIcon,
   FileSpreadsheetIcon,
-  Pencil,
-  Trash2,
   Plus,
 } from "lucide-react";
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 
 import {
   DropdownMenu,
@@ -61,15 +60,22 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   title: string
+  addLabel?: string
+  onAdd?: () => void
+  renderRowActions?: (row: TData) => ReactNode
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   title,
+  addLabel = "Add",
+  onAdd,
+  renderRowActions,
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = useState<SortingState>([])
+  const hasActions = Boolean(renderRowActions)
 
   const table = useReactTable({
     data,
@@ -78,6 +84,12 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
   })
 
   const exportToCSV = () => {
@@ -152,10 +164,15 @@ export function DataTable<TData, TValue>({
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
         {/* Botón para agregar nuevos registros */}
-        <Button className='bg-sky-600/10 text-sky-600 border border-sky-400 hover:bg-sky-600/20 focus-visible:ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:hover:bg-sky-400/20 dark:focus-visible:ring-sky-400/40'>
-          <Plus className='mr-1' />
-          Add
-        </Button>
+        {onAdd ? (
+          <Button
+            onClick={onAdd}
+            className='bg-sky-600/10 text-sky-600 border border-sky-400 hover:bg-sky-600/20 focus-visible:ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:hover:bg-sky-400/20 dark:focus-visible:ring-sky-400/40'
+          >
+            <Plus className='mr-1' />
+            {addLabel}
+          </Button>
+        ) : null}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant='outline' size='sm'>
@@ -203,19 +220,20 @@ export function DataTable<TData, TValue>({
                 </TableHead>
               ))}
 
-              {/* Header para la columna de acciones */}
-              <TableHead
-                key={`${headerGroup.id}-actions`}
-                className="bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Acciones
-              </TableHead>
+              {hasActions ? (
+                <TableHead
+                  key={`${headerGroup.id}-actions`}
+                  className="bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Acciones
+                </TableHead>
+              ) : null}
             </TableRow>
           ))}
         </TableHeader>
 
         <TableBody>
-          {table.getRowModel().rows.map((row) => (
+          {table.getRowModel().rows.length ? table.getRowModel().rows.map((row) => (
             <TableRow key={row.id} className="hover:bg-gray-50 even:bg-gray-50">
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -226,21 +244,22 @@ export function DataTable<TData, TValue>({
                 </TableCell>
               ))}
 
-              {/* Acciones */}
-              <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div className="flex items-center space-x-2">
-                  {/* Editar */}
-                  <Button className="bg-yellow-500/10 text-yellow-500 border border-yellow-400 hover:bg-yellow-500/20 focus-visible:ring-yellow-500/20 dark:focus-visible:ring-yellow-500/40">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  {/* Eliminar */}
-                  <Button className="bg-destructive/10 text-destructive border border-red-400 hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+              {hasActions ? (
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {renderRowActions?.(row.original)}
+                </TableCell>
+              ) : null}
+            </TableRow>
+          )) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length + (hasActions ? 1 : 0)}
+                className="px-6 py-10 text-center text-sm text-muted-foreground"
+              >
+                No hay registros para mostrar.
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
       {/* Controles de paginación */}
