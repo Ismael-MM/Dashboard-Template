@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { logout } from "@/api/auth.api";
+import { logout, getCurrentUser, type AuthUser } from "@/api/auth.api";
 
 import {
   ChartPieIcon,
@@ -25,6 +25,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 interface MenuItem {
   title: string;
@@ -50,9 +51,10 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-const SidebarPage = () => {
+export const SidebarPage = () => {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
   const handleNavigation = (url: string) => {
     navigate(url);
@@ -72,6 +74,22 @@ const SidebarPage = () => {
       navigate("/login");
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+    const loadCurrent = async () => {
+      try {
+        const { user } = await getCurrentUser();
+        if (mounted) setCurrentUser(user ?? null);
+      } catch {
+        if (mounted) setCurrentUser(null);
+      }
+    };
+    void loadCurrent();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <Sidebar>
@@ -98,10 +116,10 @@ const SidebarPage = () => {
                     </div>
                     <div className="flex min-w-0 flex-col gap-0.5">
                       <span className="truncate text-sm font-semibold">
-                        Peter Parker
+                        {currentUser?.username ?? "Usuario"}
                       </span>
                       <span className="truncate text-xs text-muted-foreground">
-                        Admin
+                        {currentUser?.email ?? "Sin sesion"}
                       </span>
                     </div>
                   </div>

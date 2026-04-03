@@ -31,6 +31,11 @@ export const getUsers = async () => {
   return data;
 };
 
+export const getCurrentUser = async () => {
+  const { data } = await api.get<UserRecord>("/users/me");
+  return data;
+};
+
 export const getRoles = async () => {
   const { data } = await api.get<RoleOption[]>("/roles");
   return data;
