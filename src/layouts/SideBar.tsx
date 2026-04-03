@@ -24,7 +24,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/features/auth/UseAuth";
+import { useAuth } from "@/hooks/UseAuth";
 
 interface MenuItem {
   title: string;

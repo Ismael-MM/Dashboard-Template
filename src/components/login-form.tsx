@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { useAuth } from "@/features/auth/UseAuth"
+import { useAuth } from "@/hooks/UseAuth"
 
 export function LoginForm({
   className,
