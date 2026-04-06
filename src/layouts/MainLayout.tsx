@@ -2,6 +2,7 @@ import { Outlet } from "react-router";
 
 import SidebarPage from "./SideBar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function MainLayout() {
   return (
@@ -21,6 +22,12 @@ export default function MainLayout() {
           <Outlet />
         </main>
       </SidebarInset>
+      <Toaster
+        position="top-right"
+        richColors
+        duration={4000}
+        visibleToasts={5}
+      />
     </SidebarProvider>
   );
 }

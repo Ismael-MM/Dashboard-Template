@@ -16,6 +16,11 @@ export interface UserRecord {
   createdAt?: string;
 }
 
+export interface ApiResponse<T>{
+  message: string;
+  data: T;
+}
+
 export interface UserFormPayload {
   email: string;
   username: string;
@@ -32,8 +37,8 @@ export const getUsers = async () => {
 };
 
 export const getCurrentUser = async () => {
-  const { data } = await api.get<UserRecord>("/users/me");
-  return data;
+  const { data } = await api.get<ApiResponse<UserRecord>>("/users/me");
+  return data.data;
 };
 
 export const getRoles = async () => {
@@ -42,11 +47,11 @@ export const getRoles = async () => {
 };
 
 export const createUser = async (payload: UserFormPayload) => {
-  const { data } = await api.post<UserRecord>("/users", payload);
-  return data;
+  const { data } = await api.post<ApiResponse<UserRecord>>("/users", payload);
+  return data.data;
 };
 
 export const updateUser = async (id: number, payload: UserFormPayload) => {
-  const { data } = await api.patch<UserRecord>(`/users/${id}`, payload);
-  return data;
+  const { data } = await api.patch<ApiResponse<UserRecord>>(`/users/${id}`, payload);
+  return data.data;
 };
