@@ -8,6 +8,7 @@ import {
   getRoles,
   getUsers,
   updateUser,
+  deleteUser,
   type RoleOption,
   type UserFormPayload,
   type UserRecord,
@@ -15,7 +16,7 @@ import {
 import { DataTable } from "@/components/data-table/data-table";
 import { UserFormSheet } from "@/components/users/user-form-sheet";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 
 type FormMode = "create" | "edit";
@@ -176,6 +177,15 @@ export default function UsersPage() {
                 >
                   <Pencil className="h-4 w-4" />
                   <span className="sr-only">Edit user</span>
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="outline"
+                  className="border-red-400 bg-red-500/10 text-red-700 hover:bg-red-500/20"
+                  onClick={() => user && deleteUser(user.id).then(() => loadData())}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete user</span>
                 </Button>
               </div>
             )}

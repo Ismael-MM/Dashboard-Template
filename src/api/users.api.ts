@@ -55,3 +55,8 @@ export const updateUser = async (id: number, payload: UserFormPayload) => {
   const { data } = await api.patch<ApiResponse<UserRecord>>(`/users/${id}`, payload);
   return data.data;
 };
+
+export const deleteUser = async (id: number) => {
+  const { data } = await api.delete<ApiResponse<null>>(`/users/${id}`);
+  return data.data;
+};
