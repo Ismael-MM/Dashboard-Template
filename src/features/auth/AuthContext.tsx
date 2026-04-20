@@ -1,11 +1,11 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
-import { getCurrentUser, loginUser, logoutUser } from "@/api/auth.api";
+import { getCsrf, getCurrentUser, loginUser, logoutUser } from "@/api/auth.api";
 import type { AuthUser, LoginPayload } from "@/api/auth.api";
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
-  login: (credentials: { email: string; password: string}) => Promise<void>;
+  login: (credentials: LoginPayload) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -16,7 +16,8 @@ export function AuthProvider({ children }: { children: ReactNode}) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getCurrentUser()
+    getCsrf()
+      .then(() => getCurrentUser())
       .then(({ user }) => setUser(user))
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false))

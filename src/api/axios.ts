@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
+let csrfToken: string | null = null;
+
+export const setCsrfToken = (token: string) => {
+  csrfToken = token;
+};
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   withCredentials: true,
@@ -9,6 +15,17 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const isMutation = ['post', 'put', 'patch', 'delete'].includes(config.method ?? '')
+
+  if (isMutation && csrfToken ) {
+    config.headers['X-CSRF-Token'] = csrfToken;
+  }
+
+  return config;
+});
+
+// Response — manejo de errores
 api.interceptors.response.use(
   (response) => {
     const message = response.data?.message;

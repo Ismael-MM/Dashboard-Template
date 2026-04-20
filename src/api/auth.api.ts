@@ -1,4 +1,4 @@
-import api from "@/api/axios";
+import api, { setCsrfToken } from "@/api/axios";
 
 export interface LoginPayload {
   email: string;
@@ -20,6 +20,12 @@ export interface AuthUser {
   email: string;
   username: string;
 }
+
+export const getCsrf = async () => {
+  const { data } = await api.get<{ token: string }>('/auth/csrf-token');
+  setCsrfToken(data.token); // guarda directamente aquí
+  return data.token;
+};
 
 export const loginUser = async (credentials: LoginPayload) => {
   const { data } = await api.post<{ user: AuthUser }>("/auth/login", credentials);

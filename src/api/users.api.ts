@@ -32,8 +32,8 @@ export interface UserFormPayload {
 }
 
 export const getUsers = async () => {
-  const { data } = await api.get<UserRecord[]>("/users");
-  return data;
+  const { data } = await api.get<ApiResponse<UserRecord[]>>("/users");
+  return data.data;
 };
 
 export const getCurrentUser = async () => {
