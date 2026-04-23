@@ -211,6 +211,7 @@ export function UserFormSheet({
                 <Input
                   id="username"
                   value={values.username}
+                  autoComplete='new-username'
                   onChange={(event) => updateValue("username", event.target.value)}
                   aria-invalid={!!errors.username}
                 />
@@ -259,6 +260,7 @@ export function UserFormSheet({
                     id="password"
                     type="password"
                     value={values.password}
+                    autoComplete='new-password'
                     onChange={(event) => updateValue("password", event.target.value)}
                     aria-invalid={!!errors.password}
                   />
@@ -275,6 +277,7 @@ export function UserFormSheet({
                     id="passwordConfirm"
                     type="password"
                     value={values.passwordConfirm}
+                    autoComplete='new-password'
                     onChange={(event) =>
                       updateValue("passwordConfirm", event.target.value)
                     }
