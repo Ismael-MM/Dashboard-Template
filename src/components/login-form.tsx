@@ -104,6 +104,7 @@ export function LoginForm({
                   id="password"
                   type="password"
                   value={password}
+                  autoComplete='password'
                   onChange={(event) => setPassword(event.target.value)}
                   required
                 />
