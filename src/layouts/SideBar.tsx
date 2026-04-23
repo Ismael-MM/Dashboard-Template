@@ -1,13 +1,9 @@
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/UseAuth";
 
 import {
-  ChartPieIcon,
-  ChartSplineIcon,
-  UsersIcon,
   CheckIcon,
-  type LucideIcon,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -19,50 +15,87 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { appRoutes, type AppRoute } from '@/router/routes.config';
+import { CollapsibleTrigger, Collapsible, CollapsibleContent, } from '@/components/ui/collapsible';
 
-interface MenuItem {
-  title: string;
-  url: string;
-  icon: LucideIcon;
+
+function SidebarItem({ item }: { item: AppRoute }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleNav = (path: string) => {
+    navigate(path);
+    if (isMobile) setOpenMobile(false);
+  };
+
+  // Con hijos → collapsible
+  if (item.children?.length) {
+    const isActive = item.children.some((c) =>
+      location.pathname.startsWith(c.path),
+    );
+
+    return (
+      <Collapsible defaultOpen={isActive} className='group'>
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton className="w-full justify-between">
+              <div className="flex items-center gap-2">
+                <item.icon className="!h-5 !w-5" />
+                <span className="ml-1 text-base">{item.label}</span>
+              </div>
+              <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent className='cursor-pointer'>
+            <SidebarMenuSub>
+              {item.children.filter((c) => c.showInSidebar).map((child) => (
+                <SidebarMenuSubItem key={child.path}>
+                  <SidebarMenuSubButton
+                    isActive={location.pathname === child.path}
+                    onClick={() => handleNav(child.path)}
+                  >
+                    <child.icon className="!h-4 !w-4" />
+                    <span>{child.label}</span>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+    );
+  }
+
+    // Sin hijos → link normal
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={location.pathname === item.path}
+        onClick={() => handleNav(item.path)}
+      >
+        <item.icon className="!h-5 !w-5" />
+        <span className="ml-1 text-base">{item.label}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 }
-
-const menuItems: MenuItem[] = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: ChartSplineIcon,
-  },
-  {
-    title: "Users",
-    url: "/users",
-    icon: UsersIcon,
-  },
-  {
-    title: "Engagement Metrics",
-    url: "#",
-    icon: ChartPieIcon,
-  },
-];
 
 export const SidebarPage = () => {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
   const { user, logout} = useAuth();
 
-  const handleNavigation = (url: string) => {
-    navigate(url);
-
-    if (isMobile) {
-      setOpenMobile(false);
-    }
-  };
+  const sidebarRoutes = appRoutes.filter((r) => r.showInSidebar)
 
   const handleLogout = async () => {
     try {
@@ -78,7 +111,7 @@ export const SidebarPage = () => {
   return (
     <Sidebar>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup> {/* Estodo esto es el avatar y esas cosas */}
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -112,28 +145,13 @@ export const SidebarPage = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
+        <SidebarGroup> {/* Aqui empiezan las paginas y esas cosas */}
           <SidebarGroupLabel>Pages</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
-                return (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild>
-                      <Link
-                        to={item.url}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          handleNavigation(item.url);
-                        }}
-                      >
-                        <item.icon className="!h-5 !w-5" />
-                        <span className="ml-1 text-base">{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {sidebarRoutes.map(( item ) =>
+                <SidebarItem key={item.path} item={item} />
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

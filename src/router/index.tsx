@@ -2,8 +2,14 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
 import LoginPage from "@/pages/auth/login";
 import SignupPage from "@/pages/auth/signup";
-import UsersPage from "@/pages/users/users";
 import ProtectedRoute from "./ProtectedRoute";
+import { appRoutes, type AppRoute } from './routes.config';
+
+function flattenRoutes(routes: AppRoute[]): AppRoute[] {
+  return routes.flatMap((route) =>
+    route.children ? flattenRoutes(route.children) : route
+  );
+}
 
 export const router = createBrowserRouter([
   {
@@ -17,14 +23,12 @@ export const router = createBrowserRouter([
             index: true,
             element: <Navigate to="/dashboard" replace />,
           },
-          {
-            path: "dashboard",
-            element: <div>Métricas Principales (Conectar con NestJS)</div>,
-          },
-          {
-            path: "users",
-            element: <UsersPage />,
-          },
+          ...flattenRoutes(appRoutes)
+            .filter((e) => e.element)
+            .map(({path, element}) => ({
+            path: path.replace(/^\//, ''),
+            element,
+          })),
         ],
       },
     ]
@@ -41,8 +45,4 @@ export const router = createBrowserRouter([
     path: "*",
     element: <div>404 - Not Found</div>,
   },
-],
-{    
-  future: {
-  },
-});
+]);
