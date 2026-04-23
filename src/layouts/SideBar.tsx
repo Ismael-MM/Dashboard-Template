@@ -50,7 +50,7 @@ function SidebarItem({ item }: { item: AppRoute }) {
           <CollapsibleTrigger asChild>
             <SidebarMenuButton className="w-full justify-between">
               <div className="flex items-center gap-2">
-                <item.icon className="!h-5 !w-5" />
+                <item.icon className="h-5! w-5!" />
                 <span className="ml-1 text-base">{item.label}</span>
               </div>
               <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
@@ -64,7 +64,7 @@ function SidebarItem({ item }: { item: AppRoute }) {
                     isActive={location.pathname === child.path}
                     onClick={() => handleNav(child.path)}
                   >
-                    <child.icon className="!h-4 !w-4" />
+                    <child.icon className="h-4! w-4!" />
                     <span>{child.label}</span>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
@@ -83,7 +83,7 @@ function SidebarItem({ item }: { item: AppRoute }) {
         isActive={location.pathname === item.path}
         onClick={() => handleNav(item.path)}
       >
-        <item.icon className="!h-5 !w-5" />
+        <item.icon className="h-5! w-5!" />
         <span className="ml-1 text-base">{item.label}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
