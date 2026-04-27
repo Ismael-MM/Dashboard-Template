@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/hooks/UseAuth";
+import { useAuth } from "@/hooks/auth/UseAuth";
 
 export default function ProtectedRoute() {
   const { user, isLoading } = useAuth();

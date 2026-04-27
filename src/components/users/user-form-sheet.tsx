@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
-import type { RoleOption, UserFormPayload, UserRecord } from "@/api/users.api";
+import type { UserFormPayload, UserRecord } from "@/api/users.api";
+import type { RoleOption } from '@/api/roles.api';
+import { getRolesDropdown } from '@/api/roles.api';
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -25,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useQuery } from '@tanstack/react-query';
 
 type FormMode = "create" | "edit";
 
@@ -43,7 +46,6 @@ type FormErrors = Partial<Record<keyof FormValues, string>>;
 interface UserFormSheetProps {
   open: boolean;
   mode: FormMode;
-  roles: RoleOption[];
   user?: UserRecord | null;
   isSubmitting?: boolean;
   submitError?: string | null;
@@ -74,7 +76,6 @@ const getInitialValues = (user?: UserRecord | null): FormValues => ({
 export function UserFormSheet({
   open,
   mode,
-  roles,
   user,
   isSubmitting = false,
   submitError,
@@ -83,6 +84,12 @@ export function UserFormSheet({
 }: UserFormSheetProps) {
   const [values, setValues] = useState<FormValues>(emptyValues);
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const {data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: getRolesDropdown,
+    enabled: open,
+  })
 
   useEffect(() => {
     if (open) {
@@ -159,7 +166,6 @@ export function UserFormSheet({
     if (values.roleId) {
       payload.roleId = values.roleId;
     }
-
     if (mode === "create" || values.password.trim()) {
       payload.password = values.password;
       payload.passwordConfirm = values.passwordConfirm;
@@ -211,6 +217,7 @@ export function UserFormSheet({
                 <Input
                   id="username"
                   value={values.username}
+                  autoComplete='new-username'
                   onChange={(event) => updateValue("username", event.target.value)}
                   aria-invalid={!!errors.username}
                 />
@@ -259,6 +266,7 @@ export function UserFormSheet({
                     id="password"
                     type="password"
                     value={values.password}
+                    autoComplete='new-password'
                     onChange={(event) => updateValue("password", event.target.value)}
                     aria-invalid={!!errors.password}
                   />
@@ -275,6 +283,7 @@ export function UserFormSheet({
                     id="passwordConfirm"
                     type="password"
                     value={values.passwordConfirm}
+                    autoComplete='new-password'
                     onChange={(event) =>
                       updateValue("passwordConfirm", event.target.value)
                     }

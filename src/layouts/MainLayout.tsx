@@ -23,7 +23,7 @@ export default function MainLayout() {
         </main>
       </SidebarInset>
       <Toaster
-        position="top-right"
+        position="top-center"
         richColors
         duration={4000}
         visibleToasts={5}

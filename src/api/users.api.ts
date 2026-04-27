@@ -1,8 +1,28 @@
 import api from "@/api/axios";
+import type { RoleOption } from './roles.api';
 
-export interface RoleOption {
-  id: string;
-  name: string;
+export interface PaginationMeta {
+  total: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface UsersParams {
+  // PaginationDto
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  // UserFiltersDto
+  email?: string;
+  username?: string;
+  nombre?: string;
+  apellido?: string;
+  roleId?: string;
 }
 
 export interface UserRecord {
@@ -21,6 +41,11 @@ export interface ApiResponse<T>{
   data: T;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
 export interface UserFormPayload {
   email: string;
   username: string;
@@ -31,19 +56,14 @@ export interface UserFormPayload {
   roleId?: string;
 }
 
-export const getUsers = async () => {
-  const { data } = await api.get<UserRecord[]>("/users");
+export const getUsers = async (params: UsersParams = {}) => {
+  const { data } = await api.get<PaginatedResponse<UserRecord>>("/users", { params });
   return data;
 };
 
 export const getCurrentUser = async () => {
   const { data } = await api.get<ApiResponse<UserRecord>>("/users/me");
   return data.data;
-};
-
-export const getRoles = async () => {
-  const { data } = await api.get<RoleOption[]>("/roles");
-  return data;
 };
 
 export const createUser = async (payload: UserFormPayload) => {
