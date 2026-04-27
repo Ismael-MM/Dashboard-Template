@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import { AxiosError } from "axios";
 
-import { createUser, getRoles, updateUser, type UserFormPayload, type UserRecord } from "@/api/users.api";
+import { createUser, updateUser, type UserFormPayload, type UserRecord } from "@/api/users.api";
 import { useUsers } from '@/hooks/users/UseUsers';
 import { DataTable } from "@/components/data-table/data-table";
 import { UserFormSheet } from "@/components/users/user-form-sheet";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
 type FormMode = "create" | "edit";
@@ -17,12 +17,6 @@ type FormMode = "create" | "edit";
 export default function UsersPage() {
   const queryClient = useQueryClient();
   const { data, meta, isLoading, params, setParams, setSort } = useUsers();
-
-  // Roles con TanStack Query también
-  const { data: roles = [] } = useQuery({
-    queryKey: ['roles'],
-    queryFn: getRoles,
-  });
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [formMode, setFormMode] = useState<FormMode>("create");
@@ -37,9 +31,17 @@ export default function UsersPage() {
     { accessorKey: "apellido", header: "Apellido" },
     { accessorKey: "email", header: "Email" },
     {
-      id: "role",
+      id: "roleId",
       header: "Rol",
-      cell: ({ row }) => row.original.role?.name ?? "Sin rol",
+      cell: ({ row }) => {
+        const roleName = row.original.role?.name
+
+        return roleName ? (
+          <div className="font-medium text-slate-700">{roleName}</div>
+        ) : (
+          <span className="text-xs text-muted-foreground italic">Sin rol</span>
+        );
+      },
     },
   ], []);
 
@@ -134,7 +136,6 @@ export default function UsersPage() {
       <UserFormSheet
         open={isSheetOpen}
         mode={formMode}
-        roles={roles}
         user={selectedUser}
         isSubmitting={isSubmitting}
         submitError={submitError}

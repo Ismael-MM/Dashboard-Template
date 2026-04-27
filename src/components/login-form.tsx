@@ -1,7 +1,7 @@
 import { useState, type ComponentProps, type FormEvent } from "react"
 import { AxiosError } from "axios"
 import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "@/hooks/UseAuth"
+import { useAuth } from "@/hooks/auth/UseAuth"
 import { loginUser } from "@/api/auth.api"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"

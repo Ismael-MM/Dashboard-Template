@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/UseAuth";
+import { useAuth } from "@/hooks/auth/UseAuth";
 
 import {
   CheckIcon,
