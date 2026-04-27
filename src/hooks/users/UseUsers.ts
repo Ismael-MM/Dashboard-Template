@@ -44,6 +44,7 @@ export const useUsers = () => {
     isLoading: query.isLoading,
     // params actuales
     params,
+    setParams,
     // callbacks para la tabla
     setPage: (pageIndex: number) => setParams({ page: pageIndex + 1 }),
     setLimit: (limit: number) => setParams({ limit, page: 1 }),

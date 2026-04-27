@@ -1,4 +1,3 @@
-// pages/users/UsersPage.tsx
 "use client";
 
 import { useMemo, useState } from "react";
@@ -17,7 +16,7 @@ type FormMode = "create" | "edit";
 
 export default function UsersPage() {
   const queryClient = useQueryClient();
-  const { data, meta, isLoading, params, setPage, setLimit, setSort } = useUsers();
+  const { data, meta, isLoading, params, setParams, setSort } = useUsers();
 
   // Roles con TanStack Query también
   const { data: roles = [] } = useQuery({
@@ -115,8 +114,7 @@ export default function UsersPage() {
             pageSize: params.limit ?? 10,
           }}
           onPaginationChange={({ pageIndex, pageSize }) => {
-            setPage(pageIndex);
-            setLimit(pageSize);
+            setParams({ page: pageIndex + 1, limit: pageSize})
           }}
           onSortingChange={setSort}
           renderRowActions={(user) => (
