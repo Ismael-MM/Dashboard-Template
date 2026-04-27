@@ -5,6 +5,30 @@ export interface RoleOption {
   name: string;
 }
 
+export interface PaginationMeta {
+  total: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface UsersParams {
+  // PaginationDto
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  // UserFiltersDto
+  email?: string;
+  username?: string;
+  nombre?: string;
+  apellido?: string;
+  roleId?: string;
+}
+
 export interface UserRecord {
   id: number;
   email: string;
@@ -21,6 +45,11 @@ export interface ApiResponse<T>{
   data: T;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
 export interface UserFormPayload {
   email: string;
   username: string;
@@ -31,9 +60,9 @@ export interface UserFormPayload {
   roleId?: string;
 }
 
-export const getUsers = async () => {
-  const { data } = await api.get<ApiResponse<UserRecord[]>>("/users");
-  return data.data;
+export const getUsers = async (params: UsersParams = {}) => {
+  const { data } = await api.get<PaginatedResponse<UserRecord>>("/users", { params });
+  return data;
 };
 
 export const getCurrentUser = async () => {

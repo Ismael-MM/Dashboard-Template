@@ -55,7 +55,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -63,6 +62,11 @@ interface DataTableProps<TData, TValue> {
   addLabel?: string
   onAdd?: () => void
   renderRowActions?: (row: TData) => ReactNode
+  pageCount?: number
+  pagination?: { pageIndex: number; pageSize: number }
+  onPaginationChange?: (pagination: { pageIndex: number; pageSize: number }) => void
+  onSortingChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void
+  isLoading?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -72,6 +76,11 @@ export function DataTable<TData, TValue>({
   addLabel = "Add",
   onAdd,
   renderRowActions,
+  pageCount,
+  pagination,
+  onPaginationChange,
+  onSortingChange,
+  isLoading,
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = useState<SortingState>([])
@@ -80,16 +89,27 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
-    onSortingChange: setSorting,
+    pageCount: pageCount ?? -1,
+    state: { sorting,
+      pagination: pagination ?? { pageIndex: 0, pageSize: 10},
+    },
+    onSortingChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(sorting) : updater;
+      setSorting(next);
+      if (next.length > 0) {
+        onSortingChange?.(next[0].id, next[0].desc ? 'desc' : 'asc');
+      }
+    },
+    onPaginationChange: (updater) => {
+      const next = typeof updater === 'function'
+        ? updater(pagination ?? { pageIndex: 0, pageSize: 10 })
+        : updater;
+      onPaginationChange?.(next);
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
+    manualPagination: true,
+    manualSorting: true,
   })
 
   const exportToCSV = () => {
