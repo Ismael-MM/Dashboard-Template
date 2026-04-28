@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import type { UserFormPayload, UserRecord } from "@/api/users.api";
-import type { RoleOption } from '@/api/roles.api';
-import { getRolesDropdown } from '@/api/roles.api';
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -27,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useQuery } from '@tanstack/react-query';
+import type { RoleOption } from '@/api/roles.api';
 
 type FormMode = "create" | "edit";
 
@@ -46,6 +44,7 @@ type FormErrors = Partial<Record<keyof FormValues, string>>;
 interface UserFormSheetProps {
   open: boolean;
   mode: FormMode;
+  roles: RoleOption[];
   user?: UserRecord | null;
   isSubmitting?: boolean;
   submitError?: string | null;
@@ -76,6 +75,7 @@ const getInitialValues = (user?: UserRecord | null): FormValues => ({
 export function UserFormSheet({
   open,
   mode,
+  roles,
   user,
   isSubmitting = false,
   submitError,
@@ -84,12 +84,6 @@ export function UserFormSheet({
 }: UserFormSheetProps) {
   const [values, setValues] = useState<FormValues>(emptyValues);
   const [errors, setErrors] = useState<FormErrors>({});
-
-  const {data: roles = [] } = useQuery({
-    queryKey: ['roles'],
-    queryFn: getRolesDropdown,
-    enabled: open,
-  })
 
   useEffect(() => {
     if (open) {

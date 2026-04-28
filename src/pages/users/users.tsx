@@ -7,7 +7,6 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  type PaginatedResponse,
   type UserFormPayload,
   type UserRecord,
 } from "@/api/users.api";
@@ -17,8 +16,10 @@ import { UserFormSheet } from "@/components/users/user-form-sheet";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm_delete_dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { UsersFilters } from '@/components/users/usersFilters';
+import { getRolesDropdown } from '@/api/roles.api';
 
 type FormMode = "create" | "edit";
 
@@ -31,6 +32,11 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const {data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: getRolesDropdown,
+  })
 
   const columns = useMemo<ColumnDef<UserRecord>[]>(() => [
     { accessorKey: "id", header: "ID" },
@@ -166,12 +172,20 @@ export default function UsersPage() {
               />
             </div>
           )}
+          renderFilters={
+            <UsersFilters
+              params={params}
+              setParams={setParams}
+              roles={roles}
+            />
+          }
         />
       </div>
 
       <UserFormSheet
         open={isSheetOpen}
         mode={formMode}
+        roles={roles}
         user={selectedUser}
         isSubmitting={isSubmitting}
         submitError={submitError}

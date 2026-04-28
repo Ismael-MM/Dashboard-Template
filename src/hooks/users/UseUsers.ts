@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getUsers, type UsersParams } from '@/api/users.api';
+import { useCallback } from 'react';
 
 export const useUsers = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,7 +24,7 @@ export const useUsers = () => {
     placeholderData: (prev) => prev,
   });
 
-  const setParams = (next: Partial<UsersParams>) => {
+  const setParams = useCallback((next: Partial<UsersParams>) => {
     setSearchParams((prev) => {
       const updated = new URLSearchParams(prev);
       Object.entries(next).forEach(([key, value]) => {
@@ -35,7 +36,7 @@ export const useUsers = () => {
       });
       return updated;
     });
-  };
+  }, [setSearchParams]);
 
   return {
     // datos

@@ -7,7 +7,6 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type SortingState,
@@ -62,6 +61,7 @@ interface DataTableProps<TData, TValue> {
   addLabel?: string
   onAdd?: () => void
   renderRowActions?: (row: TData) => ReactNode
+  renderFilters?: ReactNode
   pageCount?: number
   pagination?: { pageIndex: number; pageSize: number }
   onPaginationChange?: (pagination: { pageIndex: number; pageSize: number }) => void
@@ -76,11 +76,11 @@ export function DataTable<TData, TValue>({
   addLabel = "Add",
   onAdd,
   renderRowActions,
+  renderFilters,
   pageCount,
   pagination,
   onPaginationChange,
   onSortingChange,
-  isLoading,
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = useState<SortingState>([])
@@ -183,6 +183,7 @@ export function DataTable<TData, TValue>({
         <div className="flex flex-col gap-3 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
             <h1 className="text-xl font-semibold text-slate-800 tracking-tight">{title}</h1>
+            {renderFilters}
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             {onAdd ? (
@@ -196,22 +197,22 @@ export function DataTable<TData, TValue>({
             ) : null}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant='outline' size='sm' className="w-full border-slate-200 text-slate-600 hover:bg-slate-50 sm:w-auto">
+                <Button variant='outline' className="w-full border-slate-200 text-slate-600 hover:bg-slate-50 sm:w-auto">
                   <DownloadIcon className='mr-2 h-4 w-4' />
                   Export
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align='end'>
-                <DropdownMenuItem onClick={exportToCSV}>
+                <DropdownMenuItem onClick={exportToCSV} className='cursor-pointer'>
                   <FileTextIcon className='mr-2 size-4' />
                   Export as CSV
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={exportToExcel}>
+                <DropdownMenuItem onClick={exportToExcel} className='cursor-pointer'>
                   <FileSpreadsheetIcon className='mr-2 size-4' />
                   Export as Excel
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={exportToJSON}>
+                <DropdownMenuItem onClick={exportToJSON} className='cursor-pointer'>
                   <FileTextIcon className='mr-2 size-4' />
                   Export as JSON
                 </DropdownMenuItem>
@@ -229,18 +230,20 @@ export function DataTable<TData, TValue>({
                     <TableHead
                       key={header.id}
                       onClick={header.column.getToggleSortingHandler()}
-                      className="h-11 cursor-pointer px-6 text-left text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-800"
+                      className="h-11 cursor-pointer px-6 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:text-slate-800"
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                      {header.column.getIsSorted() === "asc" && (
-                        <ArrowUp className="ml-1 h-3 w-3" />
-                      )}
-                      {header.column.getIsSorted() === "desc" && (
-                        <ArrowDown className="ml-1 h-3 w-3" />
-                      )}
+                      <div className='flex'>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {header.column.getIsSorted() === "asc" && (
+                          <ArrowUp className="ml-1 h-3 w-3" />
+                        )}
+                        {header.column.getIsSorted() === "desc" && (
+                          <ArrowDown className="ml-1 h-3 w-3" />
+                        )}
+                      </div>
                     </TableHead>
                   ))}
 
@@ -260,7 +263,7 @@ export function DataTable<TData, TValue>({
               {table.getRowModel().rows.length ? table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} className="border-b-slate-100 hover:bg-white/80 transition-colors duration-200">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-6 py-4 text-sm text-slate-600">
+                    <TableCell key={cell.id} className="px-6 py-4 text-sm text-black">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
