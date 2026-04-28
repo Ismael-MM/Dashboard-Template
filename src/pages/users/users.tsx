@@ -3,30 +3,21 @@
 import { useMemo, useState } from "react";
 import { AxiosError } from "axios";
 
-<<<<<<< HEAD
 import {
   createUser,
-  getRoles,
-  getUsers,
   updateUser,
   deleteUser,
-  type RoleOption,
+  type PaginatedResponse,
   type UserFormPayload,
   type UserRecord,
 } from "@/api/users.api";
-import { DataTable } from "@/components/data-table/data-table";
-import { UserFormSheet } from "@/components/users/user-form-sheet";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
-=======
-import { createUser, updateUser, type UserFormPayload, type UserRecord } from "@/api/users.api";
 import { useUsers } from '@/hooks/users/UseUsers';
 import { DataTable } from "@/components/data-table/data-table";
 import { UserFormSheet } from "@/components/users/user-form-sheet";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm_delete_dialog";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
->>>>>>> main
 import type { ColumnDef } from "@tanstack/react-table";
 
 type FormMode = "create" | "edit";
@@ -104,12 +95,23 @@ export default function UsersPage() {
         Array.isArray(message)
           ? message.join(", ")
           : typeof message === "string"
-          ? message
-          : "The user could not be saved. Please try again."
+            ? message
+            : "The user could not be saved. Please try again."
       );
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDelete = async (userId: number) => {
+    
+    try {
+      await deleteUser(userId);
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+
   };
 
   return (
@@ -133,62 +135,38 @@ export default function UsersPage() {
             pageSize: params.limit ?? 10,
           }}
           onPaginationChange={({ pageIndex, pageSize }) => {
-            setParams({ page: pageIndex + 1, limit: pageSize})
+            setParams({ page: pageIndex + 1, limit: pageSize })
           }}
           onSortingChange={setSort}
           renderRowActions={(user) => (
-            <Button
-              size="icon-sm"
-              variant="outline"
-              className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20"
-              onClick={() => openEdit(user)}
-            >
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">Edit user</span>
-            </Button>
-<<<<<<< HEAD
-          </div>
-        ) : null}
-
-        {isLoading ? (
-          <div className="rounded-lg border bg-background px-4 py-8 text-sm text-muted-foreground sm:px-6 sm:py-10">
-            Loading users...
-          </div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={users}
-            title="User Table"
-            addLabel="New user"
-            onAdd={openCreate}
-            renderRowActions={(user) => (
-              <div className="flex items-center gap-2">
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20"
-                  onClick={() => openEdit(user)}
-                >
-                  <Pencil className="h-4 w-4" />
-                  <span className="sr-only">Edit user</span>
-                </Button>
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  className="border-red-400 bg-red-500/10 text-red-700 hover:bg-red-500/20"
-                  onClick={() => user && deleteUser(user.id).then(() => loadData())}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Delete user</span>
-                </Button>
-              </div>
-            )}
-          />
-        )}
-=======
+            <div className="flex items-center gap-2">
+              <Button
+                size="icon-sm"
+                variant="outline"
+                className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
+                onClick={() => openEdit(user)}
+              >
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Edit user</span>
+              </Button>
+              <ConfirmDeleteDialog
+                title="Delete user"
+                description={`Are you sure you want to delete ${user.username}? This action cannot be undone.`}
+                onConfirm={() => handleDelete(user.id)}
+                trigger={(
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    className="border-red-400 bg-red-500/10 text-red-700 hover:bg-red-500/20 hover:text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete user</span>
+                  </Button>
+                )}
+              />
+            </div>
           )}
         />
->>>>>>> main
       </div>
 
       <UserFormSheet
