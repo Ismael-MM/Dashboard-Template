@@ -20,6 +20,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { UsersFilters } from '@/components/users/usersFilters';
 import { getRolesDropdown } from '@/api/roles.api';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type FormMode = "create" | "edit";
 
@@ -146,28 +147,41 @@ export default function UsersPage() {
           onSortingChange={setSort}
           renderRowActions={(user) => (
             <div className="flex items-center gap-2">
-              <Button
-                size="icon-sm"
-                variant="outline"
-                className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
-                onClick={() => openEdit(user)}
-              >
-                <Pencil className="h-4 w-4" />
-                <span className="sr-only">Edit user</span>
-              </Button>
+              <Tooltip key='edit'>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
+                    onClick={() => openEdit(user)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit user</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side='top'>
+                  <p className='text-sm'>Editar Usuario</p>
+                </TooltipContent>
+              </Tooltip>
               <ConfirmDeleteDialog
                 title="Delete user"
                 description={`Are you sure you want to delete ${user.username}? This action cannot be undone.`}
                 onConfirm={() => handleDelete(user.id)}
                 trigger={(
-                  <Button
-                    size="icon-sm"
-                    variant="outline"
-                    className="border-red-400 bg-red-500/10 text-red-700 hover:bg-red-500/20 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Delete user</span>
-                  </Button>
+                  <Tooltip key='delete'>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon-sm"
+                        variant="outline"
+                        className="border-red-400 bg-red-500/10 text-red-700 hover:bg-red-500/20 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side='top'>
+                      <p className='text-sm'>Borrar Usuario</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               />
             </div>
