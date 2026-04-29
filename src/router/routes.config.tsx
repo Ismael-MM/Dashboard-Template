@@ -1,3 +1,4 @@
+import RolesPage from '@/pages/roles/roles';
 import UsersPage from '@/pages/users/users';
 import { ChartPieIcon, ChartSplineIcon, KeyIcon, SettingsIcon, ShieldIcon, UsersIcon, type LucideIcon } from 'lucide-react';
 
@@ -36,7 +37,7 @@ export const appRoutes: AppRoute[] = [
         path: '/roles',
         label: 'Roles',
         icon: ShieldIcon,
-        element: <div>Roles</div>,
+        element: <RolesPage />,
         showInSidebar: true,
       },
       {

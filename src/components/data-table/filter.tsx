@@ -15,7 +15,6 @@ interface FilterProps {
 }
 
 export function Filter({ type, value, onChange, placeholder, options = []}: FilterProps) {
-  console.log(options)
   if (type === 'select') {
     return (
       <Select value={value ?? ''} onValueChange={(val) => onChange(val === 'all' ? '' : val)}>

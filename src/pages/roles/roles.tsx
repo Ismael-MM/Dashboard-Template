@@ -2,75 +2,45 @@
 
 import { useMemo, useState } from "react";
 import { AxiosError } from "axios";
-
-import {
-  createUser,
-  updateUser,
-  deleteUser,
-  type UserFormPayload,
-  type UserRecord,
-} from "@/api/users.api";
-import { useUsers } from '@/hooks/users/UseUsers';
 import { DataTable } from "@/components/data-table/data-table";
-import { UserFormSheet } from "@/components/users/user-form-sheet";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm_delete_dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { UsersFilters } from '@/components/users/usersFilters';
-import { getRolesDropdown } from '@/api/roles.api';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
+import { createRole, deleteRole, updateRole, type RolePayload, type RoleRecord } from '@/api/roles.api';
+import { useRoles } from '@/hooks/roles/UseRoles';
+import { RolFormSheet } from '@/components/roles/rol-form';
+import { RolesFilters } from '@/components/roles/rolFilters';
 
 type FormMode = "create" | "edit";
 
-export default function UsersPage() {
+export default function RolesPage() {
   const queryClient = useQueryClient();
-  const { data, meta, isLoading, params, setParams, setSort } = useUsers();
+  const { data, meta, isLoading, params, setParams, setSort } = useRoles();
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [formMode, setFormMode] = useState<FormMode>("create");
-  const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
+  const [selectedRole, setSelectedRole] = useState<RoleRecord | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const {data: roles = [] } = useQuery({
-    queryKey: ['roles'],
-    queryFn: getRolesDropdown,
-  })
-
-  const columns = useMemo<ColumnDef<UserRecord>[]>(() => [
+  const columns = useMemo<ColumnDef<RoleRecord>[]>(() => [
     { accessorKey: "id", header: "ID" },
-    { accessorKey: "username", header: "Username" },
-    { accessorKey: "nombre", header: "Nombre" },
-    { accessorKey: "apellido", header: "Apellido" },
-    { accessorKey: "email", header: "Email" },
-    {
-      id: "roleId",
-      header: "Rol",
-      cell: ({ row }) => {
-        const roleName = row.original.role?.name
-
-        return roleName ? (
-          <Badge className='bg-red-500'>{roleName}</Badge>
-        ) : (
-          <Badge className="text-xs text-white italic">Sin rol</Badge>
-        );
-      },
-    },
+    { accessorKey: "name", header: "name" },
   ], []);
 
   const openCreate = () => {
     setFormMode("create");
-    setSelectedUser(null);
+    setSelectedRole(null);
     setSubmitError(null);
     setIsSheetOpen(true);
   };
 
-  const openEdit = (user: UserRecord) => {
+  const openEdit = (role: RoleRecord) => {
     setFormMode("edit");
-    setSelectedUser(user);
+    setSelectedRole(role);
     setSubmitError(null);
     setIsSheetOpen(true);
   };
@@ -79,23 +49,24 @@ export default function UsersPage() {
     setIsSheetOpen(open);
     if (!open) {
       setSubmitError(null);
-      setSelectedUser(null);
+      setSelectedRole(null);
     }
   };
 
-  const handleSubmit = async (payload: UserFormPayload) => {
+  const handleSubmit = async (payload: RolePayload) => {
     try {
       setIsSubmitting(true);
       setSubmitError(null);
 
       if (formMode === "create") {
-        await createUser(payload);
-      } else if (selectedUser) {
-        await updateUser(selectedUser.id, payload);
+        await createRole(payload);
+      } else if (selectedRole) {
+        await updateRole(selectedRole.id, payload);
       }
 
       // Invalida la query para que refetchee automáticamente
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['roles'], exact: false });
+      
       setIsSheetOpen(false);
     } catch (error: unknown) {
       const message = error instanceof AxiosError ? error.response?.data?.message : null;
@@ -111,13 +82,13 @@ export default function UsersPage() {
     }
   };
 
-  const handleDelete = async (userId: number) => {
+  const handleDelete = async (roleId: string) => {
     
     try {
-      await deleteUser(userId);
-      await queryClient.invalidateQueries({ queryKey: ['users'] });
+      await deleteRole(roleId);
+      await queryClient.invalidateQueries({ queryKey: ['roles'], exact: false });
     } catch (error) {
-      console.error("Error deleting user:", error);
+      console.error("Error deleting rol:", error);
     }
 
   };
@@ -126,15 +97,15 @@ export default function UsersPage() {
     <>
       <div className="container mx-auto space-y-4 py-6 sm:space-y-5 sm:py-8 lg:py-10">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Users</h1>
-          <p className="text-sm text-muted-foreground">Manage user records from the panel.</p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Roles</h1>
+          <p className="text-sm text-muted-foreground">Manage roles records from the panel.</p>
         </div>
 
         <DataTable
           columns={columns}
           data={data}
-          title="User Table"
-          addLabel="New user"
+          title="Rol Table"
+          addLabel="New Rol"
           isLoading={isLoading}
           onAdd={openCreate}
           pageCount={meta?.totalPages ?? 0}
@@ -146,7 +117,7 @@ export default function UsersPage() {
             setParams({ page: pageIndex + 1, limit: pageSize })
           }}
           onSortingChange={setSort}
-          renderRowActions={(user) => (
+          renderRowActions={(role) => (
             <div className="flex items-center gap-2">
               <Tooltip key='edit'>
                 <TooltipTrigger asChild>
@@ -154,23 +125,23 @@ export default function UsersPage() {
                     size="icon-sm"
                     variant="outline"
                     className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
-                    onClick={() => openEdit(user)}
+                    onClick={() => openEdit(role)}
                   >
                     <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit user</span>
+                    <span className="sr-only">Edit rol</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side='top'>
-                  <p className='text-sm'>Editar Usuario</p>
+                  <p className='text-sm'>Editar rol</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip key='delete'>
                 <TooltipTrigger asChild>
                   <div>
                     <ConfirmDeleteDialog
-                      title="Delete user"
-                      description={`Are you sure you want to delete ${user.username}? This action cannot be undone.`}
-                      onConfirm={() => handleDelete(user.id)}
+                      title="Delete Rol"
+                      description={`Are you sure you want to delete ${role.username}? This action cannot be undone.`}
+                      onConfirm={() => handleDelete(role.id)}
                       trigger={(
                             <Button
                               size="icon-sm"
@@ -185,26 +156,24 @@ export default function UsersPage() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side='top'>
-                  <p className='text-sm'>Borrar Usuario</p>
+                  <p className='text-sm'>Borrar Rol</p>
                 </TooltipContent>
               </Tooltip>
             </div>
           )}
           renderFilters={
-            <UsersFilters
+            <RolesFilters
               params={params}
               setParams={setParams}
-              roles={roles}
             />
           }
         />
       </div>
 
-      <UserFormSheet
+      <RolFormSheet
         open={isSheetOpen}
         mode={formMode}
-        roles={roles}
-        user={selectedUser}
+        rol={selectedRole}
         isSubmitting={isSubmitting}
         submitError={submitError}
         onOpenChange={handleSheetChange}
