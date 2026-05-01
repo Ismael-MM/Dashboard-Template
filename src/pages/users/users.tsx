@@ -15,28 +15,29 @@ import { UserFormSheet } from "@/components/users/user-form-sheet";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm_delete_dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { UsersFilters } from '@/components/users/usersFilters';
 import { getRolesDropdown } from '@/api/roles.api';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-
-type FormMode = "create" | "edit";
+import { useCrudManager } from '@/hooks/common/useCrudManager';
 
 export default function UsersPage() {
-  const queryClient = useQueryClient();
   const { data, meta, isLoading, params, setParams, setSort } = useUsers();
 
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [formMode, setFormMode] = useState<FormMode>("create");
-  const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {data: roles = [] } = useQuery({
     queryKey: ['roles'],
     queryFn: getRolesDropdown,
+  })
+
+  const { isOpen, mode, selectedItem, isSubmitting, error, actions } = useCrudManager<UserRecord, UserFormPayload, number>({
+    queryKey: ['users'],
+    createFn: createUser,
+    updateFn: updateUser,
+    deleteFn: deleteUser,
+    getId: (user) => user.id
   })
 
   const columns = useMemo<ColumnDef<UserRecord>[]>(() => [
@@ -60,67 +61,6 @@ export default function UsersPage() {
     },
   ], []);
 
-  const openCreate = () => {
-    setFormMode("create");
-    setSelectedUser(null);
-    setSubmitError(null);
-    setIsSheetOpen(true);
-  };
-
-  const openEdit = (user: UserRecord) => {
-    setFormMode("edit");
-    setSelectedUser(user);
-    setSubmitError(null);
-    setIsSheetOpen(true);
-  };
-
-  const handleSheetChange = (open: boolean) => {
-    setIsSheetOpen(open);
-    if (!open) {
-      setSubmitError(null);
-      setSelectedUser(null);
-    }
-  };
-
-  const handleSubmit = async (payload: UserFormPayload) => {
-    try {
-      setIsSubmitting(true);
-      setSubmitError(null);
-
-      if (formMode === "create") {
-        await createUser(payload);
-      } else if (selectedUser) {
-        await updateUser(selectedUser.id, payload);
-      }
-
-      // Invalida la query para que refetchee automáticamente
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setIsSheetOpen(false);
-    } catch (error: unknown) {
-      const message = error instanceof AxiosError ? error.response?.data?.message : null;
-      setSubmitError(
-        Array.isArray(message)
-          ? message.join(", ")
-          : typeof message === "string"
-            ? message
-            : "The user could not be saved. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (userId: number) => {
-    
-    try {
-      await deleteUser(userId);
-      await queryClient.invalidateQueries({ queryKey: ['users'] });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-    }
-
-  };
-
   return (
     <>
       <div className="container mx-auto space-y-4 py-6 sm:space-y-5 sm:py-8 lg:py-10">
@@ -135,7 +75,7 @@ export default function UsersPage() {
           title="User Table"
           addLabel="New user"
           isLoading={isLoading}
-          onAdd={openCreate}
+          onAdd={actions.openCreate}
           pageCount={meta?.totalPages ?? 0}
           pagination={{
             pageIndex: (params.page ?? 1) - 1,
@@ -153,7 +93,7 @@ export default function UsersPage() {
                     size="icon-sm"
                     variant="outline"
                     className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
-                    onClick={() => openEdit(user)}
+                    onClick={() => actions.openEdit(user)}
                   >
                     <Pencil className="h-4 w-4" />
                     <span className="sr-only">Edit user</span>
@@ -169,7 +109,7 @@ export default function UsersPage() {
                     <ConfirmDeleteDialog
                       title="Delete user"
                       description={`Are you sure you want to delete ${user.username}? This action cannot be undone.`}
-                      onConfirm={() => handleDelete(user.id)}
+                      onConfirm={() => actions.handleDelete(user)}
                       trigger={(
                             <Button
                               size="icon-sm"
@@ -200,14 +140,14 @@ export default function UsersPage() {
       </div>
 
       <UserFormSheet
-        open={isSheetOpen}
-        mode={formMode}
+        open={isOpen}
+        mode={mode}
         roles={roles}
-        user={selectedUser}
+        user={selectedItem}
         isSubmitting={isSubmitting}
-        submitError={submitError}
-        onOpenChange={handleSheetChange}
-        onSubmit={handleSubmit}
+        submitError={error}
+        onOpenChange={actions.handleOpenChange}
+        onSubmit={actions.handleSubmit}
       />
     </>
   );

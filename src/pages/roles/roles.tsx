@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { act, useMemo, useState } from "react";
 import { AxiosError } from "axios";
 import { DataTable } from "@/components/data-table/data-table";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm_delete_dialog";
@@ -14,85 +14,23 @@ import type { RolePayload, RoleRecord } from '@/types/roles';
 import { useRoles } from '@/hooks/roles/UseRoles';
 import { RolFormSheet } from '@/components/roles/rol-form';
 import { RolesFilters } from '@/components/roles/rolFilters';
-
-type FormMode = "create" | "edit";
+import { useCrudManager } from '@/hooks/common/useCrudManager';
 
 export default function RolesPage() {
-  const queryClient = useQueryClient();
   const { data, meta, isLoading, params, setParams, setSort } = useRoles();
 
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [formMode, setFormMode] = useState<FormMode>("create");
-  const [selectedRole, setSelectedRole] = useState<RoleRecord | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { isOpen, mode, selectedItem, isSubmitting, error, actions } = useCrudManager<RoleRecord, RolePayload, string>({
+    queryKey: ['roles'],
+    createFn: createRole,
+    updateFn: updateRole,
+    deleteFn: deleteRole,
+    getId: (role) => role.id
+  })
 
   const columns = useMemo<ColumnDef<RoleRecord>[]>(() => [
     { accessorKey: "id", header: "ID" },
     { accessorKey: "name", header: "name" },
   ], []);
-
-  const openCreate = () => {
-    setFormMode("create");
-    setSelectedRole(null);
-    setSubmitError(null);
-    setIsSheetOpen(true);
-  };
-
-  const openEdit = (role: RoleRecord) => {
-    setFormMode("edit");
-    setSelectedRole(role);
-    setSubmitError(null);
-    setIsSheetOpen(true);
-  };
-
-  const handleSheetChange = (open: boolean) => {
-    setIsSheetOpen(open);
-    if (!open) {
-      setSubmitError(null);
-      setSelectedRole(null);
-    }
-  };
-
-  const handleSubmit = async (payload: RolePayload) => {
-    try {
-      setIsSubmitting(true);
-      setSubmitError(null);
-
-      if (formMode === "create") {
-        await createRole(payload);
-      } else if (selectedRole) {
-        await updateRole(selectedRole.id, payload);
-      }
-
-      // Invalida la query para que refetchee automáticamente
-      queryClient.invalidateQueries({ queryKey: ['roles'], exact: false });
-      
-      setIsSheetOpen(false);
-    } catch (error: unknown) {
-      const message = error instanceof AxiosError ? error.response?.data?.message : null;
-      setSubmitError(
-        Array.isArray(message)
-          ? message.join(", ")
-          : typeof message === "string"
-            ? message
-            : "The user could not be saved. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (roleId: string) => {
-    
-    try {
-      await deleteRole(roleId);
-      await queryClient.invalidateQueries({ queryKey: ['roles'], exact: false });
-    } catch (error) {
-      console.error("Error deleting rol:", error);
-    }
-
-  };
 
   return (
     <>
@@ -108,7 +46,7 @@ export default function RolesPage() {
           title="Rol Table"
           addLabel="New Rol"
           isLoading={isLoading}
-          onAdd={openCreate}
+          onAdd={actions.openCreate}
           pageCount={meta?.totalPages ?? 0}
           pagination={{
             pageIndex: (params.page ?? 1) - 1,
@@ -126,7 +64,7 @@ export default function RolesPage() {
                     size="icon-sm"
                     variant="outline"
                     className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
-                    onClick={() => openEdit(role)}
+                    onClick={() => actions.openEdit(role)}
                   >
                     <Pencil className="h-4 w-4" />
                     <span className="sr-only">Edit rol</span>
@@ -141,8 +79,8 @@ export default function RolesPage() {
                   <div>
                     <ConfirmDeleteDialog
                       title="Delete Rol"
-                      description={`Are you sure you want to delete ${role.username}? This action cannot be undone.`}
-                      onConfirm={() => handleDelete(role.id)}
+                      description={`Are you sure you want to delete ${role.name}? This action cannot be undone.`}
+                      onConfirm={() => actions.handleDelete(role)}
                       trigger={(
                             <Button
                               size="icon-sm"
@@ -172,13 +110,13 @@ export default function RolesPage() {
       </div>
 
       <RolFormSheet
-        open={isSheetOpen}
-        mode={formMode}
-        rol={selectedRole}
+        open={isOpen}
+        mode={mode}
+        rol={selectedItem}
         isSubmitting={isSubmitting}
-        submitError={submitError}
-        onOpenChange={handleSheetChange}
-        onSubmit={handleSubmit}
+        submitError={error}
+        onOpenChange={actions.handleOpenChange}
+        onSubmit={actions.handleSubmit}
       />
     </>
   );
