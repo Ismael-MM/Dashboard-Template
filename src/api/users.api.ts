@@ -1,60 +1,6 @@
 import api from "@/api/axios";
-import type { RoleOption } from './roles.api';
-
-export interface PaginationMeta {
-  total: number;
-  totalPages: number;
-  page: number;
-  limit: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
-}
-
-export interface UsersParams {
-  // PaginationDto
-  page?: number;
-  limit?: number;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  // UserFiltersDto
-  email?: string;
-  username?: string;
-  nombre?: string;
-  apellido?: string;
-  roleId?: string;
-}
-
-export interface UserRecord {
-  id: number;
-  email: string;
-  username: string;
-  nombre: string;
-  apellido: string;
-  roleId?: string | null;
-  role?: RoleOption | null;
-  createdAt?: string;
-}
-
-export interface ApiResponse<T>{
-  message: string;
-  data: T;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: PaginationMeta;
-}
-
-export interface UserFormPayload {
-  email: string;
-  username: string;
-  nombre: string;
-  apellido: string;
-  password?: string;
-  passwordConfirm?: string;
-  roleId?: string;
-}
+import type { UsersParams, UserRecord, UserFormPayload } from '@/types/users';
+import type { ApiResponse, PaginatedResponse } from '@/types/api';
 
 export const getUsers = async (params: UsersParams = {}) => {
   const { data } = await api.get<PaginatedResponse<UserRecord>>("/users", { params });

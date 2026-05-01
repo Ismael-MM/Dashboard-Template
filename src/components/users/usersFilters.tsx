@@ -1,6 +1,6 @@
 import { Filter } from '@/components/data-table/filter';
-import type { RoleOption } from '@/api/users.api';
-import type { UsersParams } from '@/api/users.api';
+import type { RoleOption } from '@/types/roles';
+import type { UsersParams } from '@/types/users';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect, useState } from 'react';
 

@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import { getCsrf, getCurrentUser, loginUser, logoutUser } from "@/api/auth.api";
-import type { AuthUser, LoginPayload } from "@/api/auth.api";
+import type { AuthUser, LoginPayload } from '@/types/auth';
 
 interface AuthContextType {
   user: AuthUser | null;

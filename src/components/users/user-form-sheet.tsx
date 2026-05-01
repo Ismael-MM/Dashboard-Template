@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type SubmitEvent } from "react";
 
-import type { UserFormPayload, UserRecord } from "@/api/users.api";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -25,7 +24,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { RoleOption } from '@/api/roles.api';
+
+import type { RoleOption } from '@/types/roles';
+import type { UserFormPayload, UserRecord } from '@/types/users';
 
 type FormMode = "create" | "edit";
 
@@ -143,7 +144,7 @@ export function UserFormSheet({
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!validate()) {

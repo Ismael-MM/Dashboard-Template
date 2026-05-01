@@ -7,9 +7,8 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  type UserFormPayload,
-  type UserRecord,
 } from "@/api/users.api";
+import type { UserFormPayload, UserRecord } from '@/types/users';
 import { useUsers } from '@/hooks/users/UseUsers';
 import { DataTable } from "@/components/data-table/data-table";
 import { UserFormSheet } from "@/components/users/user-form-sheet";

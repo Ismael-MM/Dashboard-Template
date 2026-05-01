@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { PermissionOption, RolePayload, RoleRecord } from '@/api/roles.api';
+import type { PermissionOption, RolePayload, RoleRecord } from '@/types/roles';
 
 type FormMode = "create" | "edit";
 

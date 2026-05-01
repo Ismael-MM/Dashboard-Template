@@ -1,7 +1,7 @@
 import { Filter } from '@/components/data-table/filter';
-import type { RolesParams } from '@/api/roles.api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect, useState } from 'react';
+import type { RolesParams } from '@/types/roles';
 
 interface RolesFiltersProps {
   params: RolesParams;
