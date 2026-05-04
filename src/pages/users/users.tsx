@@ -1,15 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AxiosError } from "axios";
-
+import { useMemo } from "react";
 import {
   createUser,
   updateUser,
   deleteUser,
+  getUsers,
 } from "@/api/users.api";
-import type { UserFormPayload, UserRecord } from '@/types/users';
-import { useUsers } from '@/hooks/users/UseUsers';
+import type { UserFormPayload, UserRecord, UsersParams } from '@/types/users';
 import { DataTable } from "@/components/data-table/data-table";
 import { UserFormSheet } from "@/components/users/user-form-sheet";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm_delete_dialog";
@@ -22,9 +20,19 @@ import { getRolesDropdown } from '@/api/roles.api';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { useCrudManager } from '@/hooks/common/useCrudManager';
+import { useDataTableQuery } from '@/hooks/common/useDataManager';
 
 export default function UsersPage() {
-  const { data, meta, isLoading, params, setParams, setSort } = useUsers();
+  const { data, meta, isLoading, params, setParams, onPaginationChange, onSortingChange } = useDataTableQuery<UserRecord, UsersParams>({
+    queryKey: ['users'],
+    fetchFn: getUsers,
+    parseExtraParams: (searchParams) => ({
+      roleId: searchParams.get('roleId') ?? undefined,
+      apellido: searchParams.get('apellido') ?? undefined,
+      username: searchParams.get('username') ?? undefined,
+      nombre: searchParams.get('nombre') ?? undefined,
+    })
+  });
 
 
   const {data: roles = [] } = useQuery({
@@ -81,10 +89,8 @@ export default function UsersPage() {
             pageIndex: (params.page ?? 1) - 1,
             pageSize: params.limit ?? 10,
           }}
-          onPaginationChange={({ pageIndex, pageSize }) => {
-            setParams({ page: pageIndex + 1, limit: pageSize })
-          }}
-          onSortingChange={setSort}
+          onPaginationChange={onPaginationChange}
+          onSortingChange={onSortingChange}
           renderRowActions={(user) => (
             <div className="flex items-center gap-2">
               <Tooltip key='edit'>

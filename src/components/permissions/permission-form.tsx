@@ -9,13 +9,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -23,56 +16,58 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { RolePayload, RoleRecord } from '@/types/roles';
-import type { PermissionOption } from '@/types/permissions';
+import type { PermissionPayload, PermissionRecord } from '@/types/permissions';
 
 type FormMode = "create" | "edit";
 
 type FormValues = {
   name: string;
-  permissions: string[];
+  label: string;
+  group: string;
 };
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
-interface RolFormSheetProps {
+interface PermissionFormSheetProps {
   open: boolean;
   mode: FormMode;
-  rol?: RoleRecord | null;
+  permission: PermissionRecord | null,
   isSubmitting?: boolean;
   submitError?: string | null;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (payload: RolePayload) => Promise<void>;
+  onSubmit: (payload: PermissionPayload) => Promise<void>;
 }
 
 const emptyValues: FormValues = {
   name: "",
-  permissions: [],
+  group: "",
+  label: "",
 };
 
-const getInitialValues = (rol?: RoleRecord | null): FormValues => ({
-  name: rol?.name ?? "",
-  permissions: rol?.permissions ? rol.permissions.map((p: PermissionOption) => p.name) : [],
+const getInitialValues = (permission?: PermissionRecord | null): FormValues => ({
+  name: permission?.name ?? "",
+  group: permission?.group ?? "",
+  label: permission?.label ?? "",
 });
 
-export function RolFormSheet({
+export function PermissionFormSheet({
   open,
   mode,
-  rol,
+  permission,
   isSubmitting = false,
   submitError,
   onOpenChange,
   onSubmit,
-}: RolFormSheetProps) {
+}: PermissionFormSheetProps) {
   const [values, setValues] = useState<FormValues>(emptyValues);
   const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     if (open) {
-      setValues(getInitialValues(rol));
+      setValues(getInitialValues(permission));
       setErrors({});
     }
-  }, [open, rol, mode]);
+  }, [open, permission, mode]);
 
   const title = mode === "create" ? "Create rol" : "Edit rol";
   const description = useMemo(() => {
@@ -104,13 +99,11 @@ export function RolFormSheet({
       return;
     }
 
-    const payload: RolePayload = {
-      name: values.name.trim(),
+    const payload: PermissionPayload = {
+      name: values.name,
+      group: values.name,
+      label: values.name,
     };
-
-    if (values.permissions) {
-      payload.permissions = values.permissions;
-    }
 
     await onSubmit(payload);
   };

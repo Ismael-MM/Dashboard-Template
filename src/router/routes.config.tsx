@@ -1,3 +1,4 @@
+import PermissionsPage from '@/pages/permissions/permissions';
 import RolesPage from '@/pages/roles/roles';
 import UsersPage from '@/pages/users/users';
 import { ChartPieIcon, ChartSplineIcon, KeyIcon, SettingsIcon, ShieldIcon, UsersIcon, type LucideIcon } from 'lucide-react';
@@ -44,7 +45,7 @@ export const appRoutes: AppRoute[] = [
         path: '/permissions',
         label: 'Permisos',
         icon: KeyIcon,
-        element: <div>Permisos</div>,
+        element: <PermissionsPage />,
         showInSidebar: true,
       },
     ],

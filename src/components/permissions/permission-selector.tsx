@@ -1,0 +1,110 @@
+'use client'
+
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import type { PermissionOption } from '@/types/permissions'
+
+interface PermissionSelectorProps {
+  permissions: PermissionOption[]
+  selectedPermissions: string[]
+  onPermissionsChange: (permissions: string[]) => void
+}
+
+export function PermissionSelector({
+  permissions,
+  selectedPermissions,
+  onPermissionsChange,
+}: PermissionSelectorProps) {
+  // Group permissions by their group
+  const groupedPermissions = permissions.reduce((acc, permission) => {
+    if (!acc[permission.group]) {
+      acc[permission.group] = []
+    }
+    acc[permission.group].push(permission)
+    return acc
+  }, {} as Record<string, typeof permissions[number][]>)
+
+  const handlePermissionToggle = (permissionId: string, checked: boolean) => {
+    if (checked) {
+      onPermissionsChange([...selectedPermissions, permissionId])
+    } else {
+      onPermissionsChange(selectedPermissions.filter(p => p !== permissionId))
+    }
+  }
+
+  const handleGroupToggle = (group: string, checked: boolean) => {
+    const groupPermissionIds = groupedPermissions[group].map(p => p.id)
+    
+    if (checked) {
+      const newPermissions = [...new Set([...selectedPermissions, ...groupPermissionIds])]
+      onPermissionsChange(newPermissions)
+    } else {
+      onPermissionsChange(selectedPermissions.filter(p => !groupPermissionIds.includes(p)))
+    }
+  }
+
+  const isGroupChecked = (group: string) => {
+    const groupPermissionIds = groupedPermissions[group].map(p => p.id)
+    return groupPermissionIds.every(id => selectedPermissions.includes(id))
+  }
+
+  const isGroupIndeterminate = (group: string) => {
+    const groupPermissionIds = groupedPermissions[group].map(p => p.id)
+    const checkedCount = groupPermissionIds.filter(id => selectedPermissions.includes(id)).length
+    return checkedCount > 0 && checkedCount < groupPermissionIds.length
+  }
+
+  return (
+    <div className="space-y-4">
+      <Label className="text-sm font-medium">Permisos</Label>
+      <ScrollArea className="h-64 rounded-md border p-4">
+        <div className="space-y-6">
+          {Object.entries(groupedPermissions).map(([group, permissions]) => (
+            <div key={group} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id={`group-${group}`}
+                  checked={isGroupChecked(group)}
+                  data-indeterminate={isGroupIndeterminate(group)}
+                  onCheckedChange={(checked) => handleGroupToggle(group, checked as boolean)}
+                  className="data-[indeterminate=true]:bg-primary/50"
+                />
+                <Label
+                  htmlFor={`group-${group}`}
+                  className="text-sm font-semibold text-foreground cursor-pointer"
+                >
+                  {group}
+                </Label>
+              </div>
+              
+              <div className="ml-6 space-y-2">
+                {permissions.map((permission) => (
+                  <div key={permission.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={permission.id}
+                      checked={selectedPermissions.includes(permission.id)}
+                      onCheckedChange={(checked) => 
+                        handlePermissionToggle(permission.id, checked as boolean)
+                      }
+                    />
+                    <Label
+                      htmlFor={permission.id}
+                      className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                      {permission.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+      
+      <p className="text-xs text-muted-foreground">
+        {selectedPermissions.length} permiso(s) seleccionado(s)
+      </p>
+    </div>
+  )
+}

@@ -7,34 +7,37 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { createRole, deleteRole, getRoles, updateRole } from '@/api/roles.api';
-import type { RolePayload, RoleRecord, RolesParams } from '@/types/roles';
-import { RolFormSheet } from '@/components/roles/rol-form';
 import { RolesFilters } from '@/components/roles/rolFilters';
 import { useCrudManager } from '@/hooks/common/useCrudManager';
+import { createPermission, deletePermission, getPermission, updatePermission } from '@/api/permissions.api';
+import type { PermissionPayload, PermissionRecord, PermissionsParams } from '@/types/permissions';
 import { useDataTableQuery } from '@/hooks/common/useDataManager';
+import { PermissionFormSheet } from '@/components/permissions/permission-form';
 
-export default function RolesPage() {
-  const { data, meta, isLoading, params, setParams, onPaginationChange, onSortingChange } = useDataTableQuery<RoleRecord, RolesParams>({
-    queryKey: ['roles'],
-    fetchFn: getRoles,
+export default function PermissionsPage() {
+  const { data, meta, isLoading, params, setParams, onPaginationChange, onSortingChange } = useDataTableQuery<PermissionRecord, PermissionsParams>({
+    queryKey: ['permissions'],
+    fetchFn: getPermission,
     parseExtraParams: (searchParams) => ({
-      name: searchParams.get('name') ?? undefined
+      name: searchParams.get('name') ?? undefined,
+      label: searchParams.get('label') ?? undefined,
+      group: searchParams.get('group') ?? undefined,
     })
   });
 
-
-  const { isOpen, mode, selectedItem, isSubmitting, error, actions } = useCrudManager<RoleRecord, RolePayload, string>({
-    queryKey: ['roles'],
-    createFn: createRole,
-    updateFn: updateRole,
-    deleteFn: deleteRole,
-    getId: (role) => role.id
+  const { isOpen, mode, selectedItem, isSubmitting, error, actions } = useCrudManager<PermissionRecord, PermissionPayload, string>({
+    queryKey: ['permissions'],
+    createFn: createPermission,
+    updateFn: updatePermission,
+    deleteFn: deletePermission,
+    getId: (permission) => permission.id
   })
 
-  const columns = useMemo<ColumnDef<RoleRecord>[]>(() => [
+  const columns = useMemo<ColumnDef<PermissionRecord>[]>(() => [
     { accessorKey: "id", header: "ID" },
     { accessorKey: "name", header: "name" },
+    { accessorKey: "label", header: "Label" },
+    { accessorKey: "group", header: "group" },
   ], []);
 
   return (
@@ -59,7 +62,7 @@ export default function RolesPage() {
           }}
           onPaginationChange={onPaginationChange}
           onSortingChange={onSortingChange}
-          renderRowActions={(role) => (
+          renderRowActions={(permission) => (
             <div className="flex items-center gap-2">
               <Tooltip key='edit'>
                 <TooltipTrigger asChild>
@@ -67,14 +70,14 @@ export default function RolesPage() {
                     size="icon-sm"
                     variant="outline"
                     className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
-                    onClick={() => actions.openEdit(role)}
+                    onClick={() => actions.openEdit(permission)}
                   >
                     <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit rol</span>
+                    <span className="sr-only">Edit permiso</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side='top'>
-                  <p className='text-sm'>Editar rol</p>
+                  <p className='text-sm'>Editar permiso</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip key='delete'>
@@ -82,8 +85,8 @@ export default function RolesPage() {
                   <div>
                     <ConfirmDeleteDialog
                       title="Delete Rol"
-                      description={`Are you sure you want to delete ${role.name}? This action cannot be undone.`}
-                      onConfirm={() => actions.handleDelete(role)}
+                      description={`Are you sure you want to delete ${permission.name}? This action cannot be undone.`}
+                      onConfirm={() => actions.handleDelete(permission)}
                       trigger={(
                             <Button
                               size="icon-sm"
@@ -98,24 +101,21 @@ export default function RolesPage() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side='top'>
-                  <p className='text-sm'>Borrar Rol</p>
+                  <p className='text-sm'>Borrar permiso</p>
                 </TooltipContent>
               </Tooltip>
             </div>
           )}
           renderFilters={
-            <RolesFilters
-              params={params}
-              setParams={setParams}
-            />
+            <></>
           }
         />
       </div>
 
-      <RolFormSheet
+      <PermissionFormSheet
         open={isOpen}
         mode={mode}
-        rol={selectedItem}
+        permission={selectedItem}
         isSubmitting={isSubmitting}
         submitError={error}
         onOpenChange={actions.handleOpenChange}

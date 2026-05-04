@@ -1,12 +1,8 @@
 import type { FiltersParams } from './api';
 import type { UserRecord } from './users';
+import type { PermissionOption } from './permissions';
 
 export interface RoleOption {
-  id: string;
-  name: string;
-}
-
-export interface PermissionOption {
   id: string;
   name: string;
 }
