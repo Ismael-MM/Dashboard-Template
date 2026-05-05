@@ -28,6 +28,7 @@ export function useDataTableQuery<TRecord, TParams>({
   });
 
   const setParams = useCallback((next: Partial<TParams>) => {
+    console.log('setParams llamado con:', next);
     setSearchParams((prev) => {
       const updated = new URLSearchParams(prev);
       Object.entries(next).forEach(([key, value]) => {

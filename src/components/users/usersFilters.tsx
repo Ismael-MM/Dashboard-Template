@@ -2,7 +2,7 @@ import { Filter } from '@/components/data-table/filter';
 import type { RoleOption } from '@/types/roles';
 import type { UsersParams } from '@/types/users';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UsersFiltersProps {
   params: UsersParams;
@@ -13,9 +13,16 @@ interface UsersFiltersProps {
 export function UsersFilters({ params, setParams, roles }: UsersFiltersProps) {
   const [searchValue, setSearchValue] = useState(params.search ?? '');
   const debouncedSearch = useDebounce(searchValue, 400)
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    setParams({ search: debouncedSearch, page: 1 });
+    if (isFirstRender.current) {
+      isFirstRender.current = false;  
+      return;
+    }
+    if (debouncedSearch !== (params.search ?? '')) {
+      setParams({ search: debouncedSearch, page: 1 });
+    }
   }, [debouncedSearch, setParams]);
 
   return (

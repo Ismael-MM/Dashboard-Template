@@ -60,7 +60,7 @@ export function useCrudManager<TRecord, TPayload, TId extends string | number = 
       }
 
       // Invalida la query para que refetchee automáticamente
-      await queryClient.invalidateQueries({ queryKey, exact: false });
+      queryClient.invalidateQueries({ queryKey, exact: false });
       setIsOpen(false);
     } catch (error: unknown) {
       const message = error instanceof AxiosError ? error.response?.data?.message : null;
@@ -80,7 +80,7 @@ export function useCrudManager<TRecord, TPayload, TId extends string | number = 
 
     try {
       await deleteFn(getId(item));
-      await queryClient.invalidateQueries({ queryKey, exact: false });
+      queryClient.invalidateQueries({ queryKey, exact: false });
     } catch (error) {
       console.error("Error al borrar:", error);
     }

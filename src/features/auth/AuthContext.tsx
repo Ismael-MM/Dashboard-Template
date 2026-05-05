@@ -25,13 +25,23 @@ export function AuthProvider({ children }: { children: ReactNode}) {
 
   const login = async (credentials: LoginPayload) =>
   {
-    const { user } = await loginUser(credentials);
-    setUser(user);
+    try {
+      const { user } = await loginUser(credentials);
+      setUser(user);
+      await getCsrf();
+    } catch (error) {
+      console.error("inicio de sesion", error);
+    }
   };
 
   const logout = async () => {
-    await logoutUser();
-    setUser(null);
+    try {
+      await logoutUser();
+      setUser(null);
+      await getCsrf();
+    } catch (error) {
+      console.error("al cerrar de sesion", error);
+    }
   }
 
   return ( 

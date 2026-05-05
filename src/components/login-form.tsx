@@ -1,7 +1,6 @@
 import { useState, type ComponentProps, type FormEvent } from "react"
 import { AxiosError } from "axios"
 import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "@/hooks/auth/UseAuth"
 import { loginUser } from "@/api/auth.api"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,6 +19,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
+import { useAuth } from '@/hooks/auth/UseAuth'
 
 
 
@@ -33,13 +33,15 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const  { login }  = useAuth();
+
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
     setError(null)
 
     try {
       setIsSubmitting(true)
-      await loginUser({
+      await login({
         email,
         password,
       })
