@@ -57,6 +57,7 @@ interface DataTableProps<TData, TValue> {
   renderRowActions?: (row: TData) => ReactNode
   renderFilters?: ReactNode
   pageCount?: number
+  totalCount?: number
   pagination?: { pageIndex: number; pageSize: number }
   onPaginationChange?: (pagination: { pageIndex: number; pageSize: number }) => void
   onSortingChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void
@@ -72,6 +73,7 @@ export function DataTable<TData, TValue>({
   renderRowActions,
   renderFilters,
   pageCount,
+  totalCount,
   pagination,
   onPaginationChange,
   onSortingChange,
@@ -293,7 +295,7 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center gap-6">
               {/* Selector de filas por página */}
               <div className="hidden items-center gap-2 sm:flex">
-                <p className="text-sm font-medium text-slate-500">Filas</p>
+                <p className="text-sm font-medium text-slate-500">Ver</p>
                 <Select
                   value={`${table.getState().pagination.pageSize}`}
                   onValueChange={(v) => table.setPageSize(Number(v))}
@@ -302,11 +304,14 @@ export function DataTable<TData, TValue>({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent side="top">
-                    {[10, 20, 50].map((size) => (
-                      <SelectItem key={size} value={`${size}`}>{size}</SelectItem>
+                    {[10, 20, 50, totalCount].map((size) => (
+                      <SelectItem key={size} value={`${size}`}>
+                        { size === totalCount ? "Todos" : size}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-sm font-medium text-slate-500"> por página | {totalCount === 1 ? 'Registro' : 'Registros'}: <span className='text-black'>{totalCount}</span></p>
               </div>
 
               {/* Controles de navegación */}

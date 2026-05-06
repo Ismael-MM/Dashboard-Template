@@ -56,6 +56,7 @@ export default function PermissionsPage() {
           isLoading={isLoading}
           onAdd={actions.openCreate}
           pageCount={meta?.totalPages ?? 0}
+          totalCount={meta?.total ?? 0}
           pagination={{
             pageIndex: (params.page ?? 1) - 1,
             pageSize: params.limit ?? 10,

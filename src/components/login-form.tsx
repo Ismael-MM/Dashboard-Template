@@ -46,19 +46,15 @@ export function LoginForm({
         password,
       })
       navigate("/dashboard", { replace: true })
-    } catch (err) {
-      const message =
-        err instanceof AxiosError
-          ? err.response?.data?.message
-          : null
-
-      setError(
-        Array.isArray(message)
-          ? message.join(", ")
-          : typeof message === "string"
-            ? message
-            : "No se pudo iniciar sesión. Verifica tus credenciales."
-      )
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error.response)
+        if (error.response?.status == 429) {
+          setError("Demasiados intentos. Por favor, espera 1 minuto antes de volver a intentarlo.")
+        }else{
+          setError(error.response?.data.message)
+        }
+      }
     } finally {
       setIsSubmitting(false)
     }

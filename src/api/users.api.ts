@@ -18,7 +18,8 @@ export const createUser = async (payload: UserFormPayload) => {
 };
 
 export const updateUser = async (id: number, payload: UserFormPayload) => {
-  const { data } = await api.patch<ApiResponse<UserRecord>>(`/users/${id}`, payload);
+  const { passwordConfirm: _, ...cleanPayload } = payload;
+  const { data } = await api.patch<ApiResponse<UserRecord>>(`/users/${id}`, cleanPayload);
   return data.data;
 };
 

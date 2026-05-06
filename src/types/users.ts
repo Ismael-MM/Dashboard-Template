@@ -30,3 +30,11 @@ export interface UserFormPayload {
   passwordConfirm?: string;
   roleId?: string;
 }
+
+export interface UserUpdatePayload {
+  email: string;
+  username: string;
+  nombre: string;
+  apellido: string;
+  password?: string;
+}

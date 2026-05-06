@@ -54,6 +54,11 @@ api.interceptors.response.use(
       case 404:
         toast.error('Recurso no encontrado');
         break;
+      case 429:
+        toast.error('Demasiados intentos. Por favor, espera 1 minuto antes de volver a intentarlo.', {
+          duration: 5000,
+        });
+        break;
       case 422:
         toast.error(message);
         break;

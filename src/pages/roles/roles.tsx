@@ -55,6 +55,8 @@ export default function RolesPage() {
     }
   ], []);
 
+  console.log(meta)
+
   return (
     <>
       <div className="container mx-auto space-y-4 py-6 sm:space-y-5 sm:py-8 lg:py-10">
@@ -71,6 +73,7 @@ export default function RolesPage() {
           isLoading={isLoading}
           onAdd={actions.openCreate}
           pageCount={meta?.totalPages ?? 0}
+          totalCount={meta?.total ?? 0}
           pagination={{
             pageIndex: (params.page ?? 1) - 1,
             pageSize: params.limit ?? 10,
