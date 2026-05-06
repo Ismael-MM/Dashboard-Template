@@ -24,7 +24,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { RolePayload, RoleRecord } from '@/types/roles';
-import type { PermissionOption } from '@/types/permissions';
+import type { PermissionOption, PermissionRecord } from '@/types/permissions';
+import { PermissionSelector } from '../permissions/permission-selector';
 
 type FormMode = "create" | "edit";
 
@@ -39,6 +40,8 @@ interface RolFormSheetProps {
   open: boolean;
   mode: FormMode;
   rol?: RoleRecord | null;
+  permissions?: PermissionOption[] | null;
+  permissionsSeleted?: PermissionRecord[] | null;
   isSubmitting?: boolean;
   submitError?: string | null;
   onOpenChange: (open: boolean) => void;
@@ -59,6 +62,8 @@ export function RolFormSheet({
   open,
   mode,
   rol,
+  permissions,
+  permissionsSeleted,
   isSubmitting = false,
   submitError,
   onOpenChange,
@@ -141,6 +146,13 @@ export function RolFormSheet({
                   />
                   <FieldError>{errors.name}</FieldError>
                 </Field>
+              </div>
+              <div>
+                <PermissionSelector
+                  permissions={permissions ?? []}
+                  selectedPermissions={values.permissions}
+                  onPermissionsChange={(newPermissions) => updateValue("permissions", newPermissions as any)}
+                />
               </div>
               {submitError ? <FieldError>{submitError}</FieldError> : null}
             </FieldGroup>

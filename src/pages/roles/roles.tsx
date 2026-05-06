@@ -13,6 +13,9 @@ import { RolFormSheet } from '@/components/roles/rol-form';
 import { RolesFilters } from '@/components/roles/rolFilters';
 import { useCrudManager } from '@/hooks/common/useCrudManager';
 import { useDataTableQuery } from '@/hooks/common/useDataManager';
+import { PermissionBadges } from '@/components/permissions/permission-badged';
+import { getPermissionsDropdown } from '@/api/permissions.api';
+import { useQuery } from '@tanstack/react-query';
 
 export default function RolesPage() {
   const { data, meta, isLoading, params, setParams, onPaginationChange, onSortingChange } = useDataTableQuery<RoleRecord, RolesParams>({
@@ -23,6 +26,7 @@ export default function RolesPage() {
     })
   });
 
+  console.log(data);
 
   const { isOpen, mode, selectedItem, isSubmitting, error, actions } = useCrudManager<RoleRecord, RolePayload, string>({
     queryKey: ['roles'],
@@ -32,9 +36,25 @@ export default function RolesPage() {
     getId: (role) => role.id
   })
 
+  const {data: permisos = [] } = useQuery({
+    queryKey: ['permissions'],
+    queryFn: getPermissionsDropdown,
+  })
+
   const columns = useMemo<ColumnDef<RoleRecord>[]>(() => [
     { accessorKey: "id", header: "ID" },
     { accessorKey: "name", header: "name" },
+    { accessorKey: "permissions", header: "permisos",
+      cell: ({row}) => {
+        const permisosArray = row.original?.permissions ?? [];
+        return(
+          <PermissionBadges
+            permissions={permisosArray}
+          />
+        );
+
+      }
+    }
   ], []);
 
   return (
@@ -116,6 +136,8 @@ export default function RolesPage() {
         open={isOpen}
         mode={mode}
         rol={selectedItem}
+        permissions={permisos}
+        permissionsSeleted={selectedItem?.permissions}
         isSubmitting={isSubmitting}
         submitError={error}
         onOpenChange={actions.handleOpenChange}

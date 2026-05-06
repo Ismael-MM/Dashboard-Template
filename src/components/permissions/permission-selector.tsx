@@ -3,7 +3,7 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { PermissionOption } from '@/types/permissions'
+import type { PermissionOption, PermissionRecord } from '@/types/permissions'
 
 interface PermissionSelectorProps {
   permissions: PermissionOption[]
@@ -12,11 +12,11 @@ interface PermissionSelectorProps {
 }
 
 export function PermissionSelector({
-  permissions,
-  selectedPermissions,
+  permissions = [],
+  selectedPermissions = [],
   onPermissionsChange,
 }: PermissionSelectorProps) {
-  // Group permissions by their group
+  console.log(permissions)
   const groupedPermissions = permissions.reduce((acc, permission) => {
     if (!acc[permission.group]) {
       acc[permission.group] = []
@@ -34,7 +34,7 @@ export function PermissionSelector({
   }
 
   const handleGroupToggle = (group: string, checked: boolean) => {
-    const groupPermissionIds = groupedPermissions[group].map(p => p.id)
+    const groupPermissionIds = groupedPermissions[group].map(p => p.name)
     
     if (checked) {
       const newPermissions = [...new Set([...selectedPermissions, ...groupPermissionIds])]
@@ -45,13 +45,14 @@ export function PermissionSelector({
   }
 
   const isGroupChecked = (group: string) => {
-    const groupPermissionIds = groupedPermissions[group].map(p => p.id)
+    const groupPermissionIds = groupedPermissions[group].map(p => p.name)
+    console.log("Group check:",groupPermissionIds)
     return groupPermissionIds.every(id => selectedPermissions.includes(id))
   }
 
   const isGroupIndeterminate = (group: string) => {
-    const groupPermissionIds = groupedPermissions[group].map(p => p.id)
-    const checkedCount = groupPermissionIds.filter(id => selectedPermissions.includes(id)).length
+    const groupPermissionIds = groupedPermissions[group].map(p => p.name)
+    const checkedCount = groupPermissionIds.filter(name => selectedPermissions.includes(name)).length
     return checkedCount > 0 && checkedCount < groupPermissionIds.length
   }
 
@@ -80,16 +81,16 @@ export function PermissionSelector({
               
               <div className="ml-6 space-y-2">
                 {permissions.map((permission) => (
-                  <div key={permission.id} className="flex items-center gap-2">
+                  <div key={permission.name} className="flex items-center gap-2">
                     <Checkbox
-                      id={permission.id}
-                      checked={selectedPermissions.includes(permission.id)}
+                      id={permission.name}
+                      checked={selectedPermissions.includes(permission.name)}
                       onCheckedChange={(checked) => 
-                        handlePermissionToggle(permission.id, checked as boolean)
+                        handlePermissionToggle(permission.name, checked as boolean)
                       }
                     />
                     <Label
-                      htmlFor={permission.id}
+                      htmlFor={permission.name}
                       className="text-sm text-muted-foreground cursor-pointer"
                     >
                       {permission.label}

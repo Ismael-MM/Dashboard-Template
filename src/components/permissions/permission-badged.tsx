@@ -34,7 +34,7 @@ export function PermissionBadges({ permissions, maxVisible = 3 }: PermissionBadg
   return (
     <div className="flex flex-wrap items-center gap-1">
       {visiblePermissions.map((permission) => (
-        <Badge key={permission.id} variant="secondary" className="text-xs">
+        <Badge key={permission.name} variant="secondary" className="text-xs bg-indigo-50 dark:bg-indigo-900/20">
           {permission.label}
         </Badge>
       ))}
@@ -45,7 +45,7 @@ export function PermissionBadges({ permissions, maxVisible = 3 }: PermissionBadg
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground "
             >
               +{hiddenPermissions.length} más
               <ChevronDown className="ml-1 h-3 w-3" />
@@ -54,7 +54,7 @@ export function PermissionBadges({ permissions, maxVisible = 3 }: PermissionBadg
           <PopoverContent className="w-64 p-2" align="start">
             <div className="flex flex-wrap gap-1">
               {hiddenPermissions.map((permission) => (
-                <Badge key={permission.id} variant="secondary" className="text-xs">
+                <Badge key={permission.name} variant="secondary" className="text-xs bg-indigo-50 dark:bg-indigo-900/20">
                   {permission.label}
                 </Badge>
               ))}
