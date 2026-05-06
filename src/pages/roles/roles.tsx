@@ -26,8 +26,6 @@ export default function RolesPage() {
     })
   });
 
-  console.log(data);
-
   const { isOpen, mode, selectedItem, isSubmitting, error, actions } = useCrudManager<RoleRecord, RolePayload, string>({
     queryKey: ['roles'],
     createFn: createRole,

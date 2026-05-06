@@ -16,7 +16,6 @@ export function PermissionSelector({
   selectedPermissions = [],
   onPermissionsChange,
 }: PermissionSelectorProps) {
-  console.log(permissions)
   const groupedPermissions = permissions.reduce((acc, permission) => {
     if (!acc[permission.group]) {
       acc[permission.group] = []
@@ -46,7 +45,6 @@ export function PermissionSelector({
 
   const isGroupChecked = (group: string) => {
     const groupPermissionIds = groupedPermissions[group].map(p => p.name)
-    console.log("Group check:",groupPermissionIds)
     return groupPermissionIds.every(id => selectedPermissions.includes(id))
   }
 

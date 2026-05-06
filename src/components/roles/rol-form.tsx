@@ -63,7 +63,6 @@ export function RolFormSheet({
   mode,
   rol,
   permissions,
-  permissionsSeleted,
   isSubmitting = false,
   submitError,
   onOpenChange,
