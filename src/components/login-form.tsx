@@ -48,7 +48,6 @@ export function LoginForm({
       navigate("/dashboard", { replace: true })
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.log(error.response)
         if (error.response?.status == 429) {
           setError("Demasiados intentos. Por favor, espera 1 minuto antes de volver a intentarlo.")
         }else{

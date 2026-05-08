@@ -55,8 +55,6 @@ export default function RolesPage() {
     }
   ], []);
 
-  console.log(meta)
-
   return (
     <>
       <div className="container mx-auto space-y-4 py-6 sm:space-y-5 sm:py-8 lg:py-10">

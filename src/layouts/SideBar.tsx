@@ -40,13 +40,12 @@ function SidebarItem({ item }: { item: AppRoute }) {
     if (isMobile) setOpenMobile(false);
   };
 
-  const visibleChildren = item.children
-    ?.filter((c) => c.showInSidebar && (!c.permission || can(c.permission)))
+  if (item.children?.length) {
+    const isActive = item.children.some((c) => location.pathname.startsWith(c.path));
 
-  // Con hijos → collapsible
-  if (visibleChildren?.length) {
-    const isActive = item.children.some((c) =>
-      location.pathname.startsWith(c.path),
+    // Filtra los hijos por permiso
+    const visibleChildren = item.children.filter(
+      (c) => c.showInSidebar && (!c.permission || can(c.permission))
     );
 
     return (
@@ -63,7 +62,7 @@ function SidebarItem({ item }: { item: AppRoute }) {
           </CollapsibleTrigger>
           <CollapsibleContent className='cursor-pointer'>
             <SidebarMenuSub>
-              {item.children.filter((c) => c.showInSidebar).map((child) => (
+              {visibleChildren.map((child) => (
                 <SidebarMenuSubItem key={child.path}>
                   <SidebarMenuSubButton
                     isActive={location.pathname === child.path}
@@ -101,9 +100,7 @@ export const SidebarPage = () => {
   const { user, logout} = useAuth();
   const { can } = useCan();
 
-
   const sidebarRoutes = appRoutes.filter((r) => {
-    console.log(r);
     if (!r.showInSidebar) return false;
     if (r.permission && !can(r.permission)) return false;
     if(r.children?.length){

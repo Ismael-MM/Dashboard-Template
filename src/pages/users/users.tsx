@@ -21,8 +21,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Badge } from '@/components/ui/badge';
 import { useCrudManager } from '@/hooks/common/useCrudManager';
 import { useDataTableQuery } from '@/hooks/common/useDataManager';
+import { HasPermission } from '@/components/auth/HasPermission';
+import { PermissionsEnum } from '@/types/permissions';
+import { useCan } from '@/hooks/auth/UseCan';
 
 export default function UsersPage() {
+  const { can } = useCan();
+
   const { data, meta, isLoading, params, setParams, onPaginationChange, onSortingChange } = useDataTableQuery<UserRecord, UsersParams>({
     queryKey: ['users'],
     fetchFn: getUsers,
@@ -83,7 +88,7 @@ export default function UsersPage() {
           title="User Table"
           addLabel="New user"
           isLoading={isLoading}
-          onAdd={actions.openCreate}
+          onAdd={can(PermissionsEnum.USERS_CREATE) ? actions.openCreate : undefined}
           pageCount={meta?.totalPages ?? 0}
           totalCount={meta?.total ?? 0}
           pagination={{
@@ -94,46 +99,80 @@ export default function UsersPage() {
           onSortingChange={onSortingChange}
           renderRowActions={(user) => (
             <div className="flex items-center gap-2">
-              <Tooltip key='edit'>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon-sm"
-                    variant="outline"
-                    className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
-                    onClick={() => actions.openEdit(user)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit user</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side='top'>
-                  <p className='text-sm'>Editar Usuario</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip key='delete'>
-                <TooltipTrigger asChild>
-                  <div>
-                    <ConfirmDeleteDialog
-                      title="Delete user"
-                      description={`Are you sure you want to delete ${user.username}? This action cannot be undone.`}
-                      onConfirm={() => actions.handleDelete(user)}
-                      trigger={(
-                            <Button
-                              size="icon-sm"
-                              variant="outline"
-                              className="border-red-400 bg-red-500/10 text-red-700 hover:bg-red-500/20 hover:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+              <HasPermission permission={PermissionsEnum.USERS_UPDATE}
+                fallback={
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-not-allowed">
+                        <Button size="icon-sm" variant="outline" disabled>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>No tienes permisos para Borrar usuarios</p>
+                    </TooltipContent>
+                  </Tooltip>
+                }
+              >
+                <Tooltip key='edit'>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon-sm"
+                      variant="outline"
+                      className="border-yellow-400 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-600"
+                      onClick={() => actions.openEdit(user)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit user</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side='top'>
+                    <p className='text-sm'>Editar Usuario</p>
+                  </TooltipContent>
+                </Tooltip>
+              </HasPermission>
+              <HasPermission permission={PermissionsEnum.USERS_DELETE}
+                fallback={
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-not-allowed">
+                        <Button size="icon-sm" variant="outline" disabled>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>No tienes permisos para Borrar usuarios</p>
+                    </TooltipContent>
+                  </Tooltip>
+                }
+              >
+                <Tooltip key='delete'>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <ConfirmDeleteDialog
+                        title="Delete user"
+                        description={`Are you sure you want to delete ${user.username}? This action cannot be undone.`}
+                        onConfirm={() => actions.handleDelete(user)}
+                        trigger={(
+                              <Button
+                                size="icon-sm"
+                                variant="outline"
+                                className="border-red-400 bg-red-500/10 text-red-700 hover:bg-red-500/20 hover:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
 
-                      )}
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side='top'>
-                  <p className='text-sm'>Borrar Usuario</p>
-                </TooltipContent>
-              </Tooltip>
+                        )}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side='top'>
+                    <p className='text-sm'>Borrar Usuario</p>
+                  </TooltipContent>
+                </Tooltip>
+              </HasPermission>
             </div>
           )}
           renderFilters={
