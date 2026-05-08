@@ -26,20 +26,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { appRoutes, type AppRoute } from '@/router/routes.config';
 import { CollapsibleTrigger, Collapsible, CollapsibleContent, } from '@/components/ui/collapsible';
+import { useCan } from '@/hooks/auth/UseCan';
 
 
 function SidebarItem({ item }: { item: AppRoute }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
+  const { can } = useCan();
 
   const handleNav = (path: string) => {
     navigate(path);
     if (isMobile) setOpenMobile(false);
   };
 
+  const visibleChildren = item.children
+    ?.filter((c) => c.showInSidebar && (!c.permission || can(c.permission)))
+
   // Con hijos → collapsible
-  if (item.children?.length) {
+  if (visibleChildren?.length) {
     const isActive = item.children.some((c) =>
       location.pathname.startsWith(c.path),
     );
@@ -94,8 +99,18 @@ export const SidebarPage = () => {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
   const { user, logout} = useAuth();
+  const { can } = useCan();
 
-  const sidebarRoutes = appRoutes.filter((r) => r.showInSidebar)
+
+  const sidebarRoutes = appRoutes.filter((r) => {
+    console.log(r);
+    if (!r.showInSidebar) return false;
+    if (r.permission && !can(r.permission)) return false;
+    if(r.children?.length){
+      return r.children.some((c) => !c.permission || can(c.permission));
+    }
+    return true;
+  });
 
   const handleLogout = async () => {
     try {

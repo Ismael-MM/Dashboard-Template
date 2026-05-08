@@ -1,6 +1,7 @@
 import PermissionsPage from '@/pages/permissions/permissions';
 import RolesPage from '@/pages/roles/roles';
 import UsersPage from '@/pages/users/users';
+import type { PermissionsEnum } from '@/types/permissions';
 import { ChartPieIcon, ChartSplineIcon, KeyIcon, SettingsIcon, ShieldIcon, UsersIcon, type LucideIcon } from 'lucide-react';
 
 
@@ -10,6 +11,7 @@ export interface AppRoute {
   icon: LucideIcon
   element?: React.ReactNode;
   showInSidebar?: boolean;
+  permission?: keyof typeof PermissionsEnum
   children?: AppRoute[];
 };
 
@@ -33,6 +35,7 @@ export const appRoutes: AppRoute[] = [
         icon: UsersIcon,
         element: <UsersPage />,
         showInSidebar: true,
+        permission: "USERS_READ"
       },
       {
         path: '/roles',
@@ -40,6 +43,7 @@ export const appRoutes: AppRoute[] = [
         icon: ShieldIcon,
         element: <RolesPage />,
         showInSidebar: true,
+        permission: "ROLES_READ"
       },
       {
         path: '/permissions',
@@ -47,6 +51,7 @@ export const appRoutes: AppRoute[] = [
         icon: KeyIcon,
         element: <PermissionsPage />,
         showInSidebar: true,
+        permission: "PERMISSIONS_READ"
       },
     ],
   },
