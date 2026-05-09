@@ -86,8 +86,9 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     pageCount: pageCount ?? -1,
-    state: { sorting,
-      pagination: pagination ?? { pageIndex: 0, pageSize: 10},
+    state: {
+      sorting,
+      pagination: pagination ?? { pageIndex: 0, pageSize: 10 },
     },
     onSortingChange: (updater) => {
       const next = typeof updater === 'function' ? updater(sorting) : updater;
@@ -216,7 +217,7 @@ export function DataTable<TData, TValue>({
             </DropdownMenu>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <Table className="min-w-180">
             <TableHeader>
@@ -291,7 +292,7 @@ export function DataTable<TData, TValue>({
               Página <span className="font-medium text-slate-700">{table.getState().pagination.pageIndex + 1}</span> de{" "}
               <span className="font-medium text-slate-700">{table.getPageCount()}</span>
             </div>
-            
+
             <div className="flex items-center gap-6">
               {/* Selector de filas por página */}
               <div className="hidden items-center gap-2 sm:flex">
@@ -304,11 +305,13 @@ export function DataTable<TData, TValue>({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent side="top">
-                    {[10, 20, 50, totalCount].map((size) => (
-                      <SelectItem key={size} value={`${size}`}>
-                        { size === totalCount ? "Todos" : size}
-                      </SelectItem>
-                    ))}
+                    {[...new Set([10, 20, 50, totalCount])]
+                      .sort((a, b) => a - b)
+                      .map((size) => (
+                        <SelectItem key={size} value={`${size}`}>
+                          {size === totalCount ? "Todos" : size}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <p className="text-sm font-medium text-slate-500"> por página | {totalCount === 1 ? 'Registro' : 'Registros'}: <span className='text-black'>{totalCount}</span></p>
