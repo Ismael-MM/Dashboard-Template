@@ -1,15 +1,8 @@
-import { createContext, useEffect, useState, type ReactNode } from "react";
 import { getCsrf, getCurrentUser, loginUser, logoutUser } from "@/api/auth.api";
+import { useEffect, useState, type ReactNode } from "react";
 import type { AuthUser, LoginPayload } from '@/types/auth';
+import { AuthContext } from './AuthContext';
 
-interface AuthContextType {
-  user: AuthUser | null;
-  isLoading: boolean;
-  login: (credentials: LoginPayload) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode}) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -41,6 +34,4 @@ export function AuthProvider({ children }: { children: ReactNode}) {
       {children}
     </AuthContext.Provider>
   )
-
 }
-
