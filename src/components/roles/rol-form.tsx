@@ -1,122 +1,70 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { RolePayload, RoleRecord } from '@/types/roles';
-import type { PermissionOption, PermissionRecord } from '@/types/permissions';
+import type { PermissionOption } from '@/types/permissions';
 import { PermissionSelector } from '../permissions/permission-selector';
 
 type FormMode = "create" | "edit";
 
-type FormValues = {
-  name: string;
-  permissions: string[];
-};
+// ← Schema
+const roleSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  permissions: z.array(z.string()).optional(),
+});
 
-type FormErrors = Partial<Record<keyof FormValues, string>>;
+type FormValues = z.infer<typeof roleSchema>;
+
+const emptyFields: FormValues = {
+  name: "",
+  permissions: [],
+};
 
 interface RolFormSheetProps {
   open: boolean;
   mode: FormMode;
   rol?: RoleRecord | null;
   permissions?: PermissionOption[] | null;
-  permissionsSeleted?: PermissionRecord[] | null;
   isSubmitting?: boolean;
   submitError?: string | null;
   onOpenChange: (open: boolean) => void;
   onSubmit: (payload: RolePayload) => Promise<void>;
 }
 
-const emptyValues: FormValues = {
-  name: "",
-  permissions: [],
-};
-
-const getInitialValues = (rol?: RoleRecord | null): FormValues => ({
-  name: rol?.name ?? "",
-  permissions: rol?.permissions ? rol.permissions.map((p: PermissionOption) => p.name) : [],
-});
-
 export function RolFormSheet({
-  open,
-  mode,
-  rol,
-  permissions,
-  isSubmitting = false,
-  submitError,
-  onOpenChange,
-  onSubmit,
+  open, mode, rol, permissions, isSubmitting = false, submitError, onOpenChange, onSubmit,
 }: RolFormSheetProps) {
-  const [values, setValues] = useState<FormValues>(emptyValues);
-  const [errors, setErrors] = useState<FormErrors>({});
+
+  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<FormValues>({
+    resolver: zodResolver(roleSchema),
+    defaultValues: emptyFields,
+  });
 
   useEffect(() => {
     if (open) {
-      setValues(getInitialValues(rol));
-      setErrors({});
+      reset(rol ? {
+        name: rol.name,
+        permissions: rol.permissions?.map((p: PermissionOption) => p.name) ?? [],
+      } : emptyFields);
     }
-  }, [open, rol, mode]);
+  }, [open, rol, mode, reset]);
 
   const title = mode === "create" ? "Create rol" : "Edit rol";
-  const description = useMemo(() => {
-    if (mode === "create") {
-      return "Fill out the new rol's details before saving.";
-    }
+  const description = mode === "create"
+    ? "Fill out the new rol's details before saving."
+    : "Update the necessary fields.";
 
-    return "Update the necessary fields. Password is optional when editing.";
-  }, [mode]);
-
-  const updateValue = (field: keyof FormValues, value: string) => {
-    setValues((current) => ({ ...current, [field]: value }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
-  };
-
-  const validate = () => {
-    const nextErrors: FormErrors = {};
-
-    if (!values.name.trim()) nextErrors.name = "First name is required.";
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!validate()) {
-      return;
-    }
-
-    const payload: RolePayload = {
+  const onFormSubmit = async (values: FormValues) => {
+    await onSubmit({
       name: values.name.trim(),
-    };
-
-    if (values.permissions) {
-      payload.permissions = values.permissions;
-    }
-
-    await onSubmit(payload);
+      permissions: values.permissions ?? [],
+    });
   };
 
   return (
@@ -127,51 +75,41 @@ export function RolFormSheet({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col max-h-[92vh] sm:max-h-[85vh] w-full min-h-0"
-        >
-          {/* add bottom padding so the sticky footer doesn't overlap inputs */}
+        <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col max-h-[92vh] sm:max-h-[85vh] w-full min-h-0">
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5 min-h-0 pb-20 sm:pb-24">
             <FieldGroup>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="name">Nombre</FieldLabel>
-                  <Input
-                    id="name"
-                    value={values.name}
-                    onChange={(event) => updateValue("name", event.target.value)}
-                    aria-invalid={!!errors.name}
-                  />
-                  <FieldError>{errors.name}</FieldError>
+                  <Input id="name" {...register("name")} aria-invalid={!!errors.name} />
+                  <FieldError>{errors.name?.message}</FieldError>
                 </Field>
               </div>
+
               <div>
-                <PermissionSelector
-                  permissions={permissions ?? []}
-                  selectedPermissions={values.permissions}
-                  onPermissionsChange={(newPermissions) => updateValue("permissions", newPermissions as any)}
+                <Controller
+                  control={control}
+                  name="permissions"
+                  render={({ field }) => (
+                    <PermissionSelector
+                      permissions={permissions ?? []}
+                      selectedPermissions={field.value ?? []}
+                      onPermissionsChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
+
               {submitError ? <FieldError>{submitError}</FieldError> : null}
             </FieldGroup>
           </div>
 
           <DialogFooter className="sticky bottom-0 z-10 border-t bg-white/60 backdrop-blur-sm dark:bg-slate-900/60">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Saving..."
-                : mode === "create"
-                  ? "Create rol"
-                  : "Save changes"}
+              {isSubmitting ? "Saving..." : mode === "create" ? "Create rol" : "Save changes"}
             </Button>
           </DialogFooter>
         </form>

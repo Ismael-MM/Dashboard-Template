@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState, type SubmitEvent } from "react";
+import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,17 +33,6 @@ import type { UserFormPayload, UserRecord } from '@/types/users';
 
 type FormMode = "create" | "edit";
 
-type FormValues = {
-  email: string;
-  username: string;
-  nombre: string;
-  apellido: string;
-  password: string;
-  passwordConfirm: string;
-  roleId: string;
-};
-
-type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 interface UserFormSheetProps {
   open: boolean;
@@ -53,121 +45,65 @@ interface UserFormSheetProps {
   onSubmit: (payload: UserFormPayload) => Promise<void>;
 }
 
-const emptyValues: FormValues = {
-  email: "",
-  username: "",
-  nombre: "",
-  apellido: "",
-  password: "",
-  passwordConfirm: "",
-  roleId: "",
+// ← Schema — fuente de verdad
+const userSchema = z.object({
+  nombre: z.string().min(1, "First name is required."),
+  apellido: z.string().min(1, "Last name is required."),
+  username: z.string().min(1, "Username is required."),
+  email: z.string().min(1, "Email is required.").email("Enter a valid email."),
+  roleId: z.string().optional(),
+  password: z.string().optional(),
+  passwordConfirm: z.string().optional(),
+}).refine(
+  (data) => !data.password || data.password === data.passwordConfirm,
+  { message: "Passwords do not match.", path: ["passwordConfirm"] }
+);
+
+// ← Tipo inferido del schema, no escrito a mano
+type FormValues = z.infer<typeof userSchema>;
+
+// ← Campos vacíos — una sola vez
+const emptyFields: FormValues = {
+  nombre: "", apellido: "", username: "", email: "",
+  roleId: "", password: "", passwordConfirm: "",
 };
 
-const getInitialValues = (user?: UserRecord | null): FormValues => ({
-  email: user?.email ?? "",
-  username: user?.username ?? "",
-  nombre: user?.nombre ?? "",
-  apellido: user?.apellido ?? "",
-  password: "",
-  passwordConfirm: "",
-  roleId: user?.roleId ?? user?.role?.id ?? "",
-});
-
-export function UserFormSheet({
-  open,
-  mode,
-  roles,
-  user,
-  isSubmitting = false,
-  submitError,
-  onOpenChange,
-  onSubmit,
-}: UserFormSheetProps) {
-  const [values, setValues] = useState<FormValues>(emptyValues);
-  const [errors, setErrors] = useState<FormErrors>({});
-
-  useEffect(() => {
-    if (open) {
-      setValues(getInitialValues(user));
-      setErrors({});
-    }
-  }, [open, user, mode]);
+export function UserFormSheet({ open, mode, user, roles, isSubmitting, submitError, onOpenChange, onSubmit }: UserFormSheetProps) {
 
   const title = mode === "create" ? "Create user" : "Edit user";
-  const description = useMemo(() => {
-    if (mode === "create") {
-      return "Fill out the new user's details before saving.";
-    }
+  const description = mode === "create"
+    ? "Fill out the new user's details before saving."
+    : "Update the necessary fields. Password is optional when editing.";
 
-    return "Update the necessary fields. Password is optional when editing.";
-  }, [mode]);
+  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<FormValues>({
+    resolver: zodResolver(userSchema),
+    defaultValues: emptyFields,
+  });
 
-  const updateValue = (field: keyof FormValues, value: string) => {
-    setValues((current) => ({ ...current, [field]: value }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
+  useEffect(() => {
+  if (open) {
+    reset(user ? {
+      ...emptyFields,
+      nombre: user.nombre,
+      apellido: user.apellido,
+      username: user.username,
+      email: user.email,
+      roleId: user.roleId ?? user.role?.id ?? '',  // ← null → ''
+      password: '',
+      passwordConfirm: '',
+    } : emptyFields);
+  }
+}, [open, user, mode, reset]);
+
+  const onFormSubmit = async (values: FormValues) => {
+    await onSubmit({
+      ...values,
+      // limpia password si está vacío en modo edit
+      password: values.password || undefined,
+      passwordConfirm: values.passwordConfirm || undefined,
+    });
   };
 
-  const validate = () => {
-    const nextErrors: FormErrors = {};
-
-    if (!values.nombre.trim()) nextErrors.nombre = "First name is required.";
-    if (!values.apellido.trim()) nextErrors.apellido = "Last name is required.";
-    if (!values.username.trim()) nextErrors.username = "Username is required.";
-    if (!values.email.trim()) nextErrors.email = "Email is required.";
-    if (values.email && !/\S+@\S+\.\S+/.test(values.email)) {
-      nextErrors.email = "Enter a valid email.";
-    }
-
-    const shouldValidatePassword = mode === "create" || values.password.length > 0;
-
-    if (mode === "create" && !values.password) {
-      nextErrors.password = "Password is required.";
-    }
-
-    if (shouldValidatePassword && values.password.length < 6) {
-      nextErrors.password = "Password must be at least 6 characters.";
-    }
-
-    if (shouldValidatePassword && !values.passwordConfirm) {
-      nextErrors.passwordConfirm = "Confirm the password.";
-    }
-
-    if (
-      shouldValidatePassword &&
-      values.passwordConfirm &&
-      values.password !== values.passwordConfirm
-    ) {
-      nextErrors.passwordConfirm = "Passwords do not match.";
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
-
-  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!validate()) {
-      return;
-    }
-
-    const payload: UserFormPayload = {
-      email: values.email.trim(),
-      username: values.username.trim(),
-      nombre: values.nombre.trim(),
-      apellido: values.apellido.trim(),
-    };
-
-    if (values.roleId) {
-      payload.roleId = values.roleId;
-    }
-    if (mode === "create" || values.password.trim()) {
-      payload.password = values.password;
-      payload.passwordConfirm = values.passwordConfirm;
-    }
-
-    await onSubmit(payload);
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -177,78 +113,56 @@ export function UserFormSheet({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col max-h-[92vh] sm:max-h-[85vh] w-full min-h-0"
-        >
-          {/* add bottom padding so the sticky footer doesn't overlap inputs */}
+        <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col max-h-[92vh] sm:max-h-[85vh] w-full min-h-0">
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5 min-h-0 pb-20 sm:pb-24">
             <FieldGroup>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="nombre">First name</FieldLabel>
-                  <Input
-                    id="nombre"
-                    value={values.nombre}
-                    onChange={(event) => updateValue("nombre", event.target.value)}
-                    aria-invalid={!!errors.nombre}
-                  />
-                  <FieldError>{errors.nombre}</FieldError>
+                  <Input id="nombre" {...register("nombre")} aria-invalid={!!errors.nombre} />
+                  <FieldError>{errors.nombre?.message}</FieldError>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="apellido">Last name</FieldLabel>
-                  <Input
-                    id="apellido"
-                    value={values.apellido}
-                    onChange={(event) => updateValue("apellido", event.target.value)}
-                    aria-invalid={!!errors.apellido}
-                  />
-                  <FieldError>{errors.apellido}</FieldError>
+                  <Input id="apellido" {...register("apellido")} aria-invalid={!!errors.apellido} />
+                  <FieldError>{errors.apellido?.message}</FieldError>
                 </Field>
               </div>
 
               <Field>
                 <FieldLabel htmlFor="username">Username</FieldLabel>
-                <Input
-                  id="username"
-                  value={values.username}
-                  autoComplete='new-username'
-                  onChange={(event) => updateValue("username", event.target.value)}
-                  aria-invalid={!!errors.username}
-                />
-                <FieldError>{errors.username}</FieldError>
+                <Input id="username" autoComplete="new-username" {...register("username")} aria-invalid={!!errors.username} />
+                <FieldError>{errors.username?.message}</FieldError>
               </Field>
 
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  value={values.email}
-                  onChange={(event) => updateValue("email", event.target.value)}
-                  aria-invalid={!!errors.email}
-                />
-                <FieldError>{errors.email}</FieldError>
+                <Input id="email" type="email" {...register("email")} aria-invalid={!!errors.email} />
+                <FieldError>{errors.email?.message}</FieldError>
               </Field>
 
               <Field>
                 <FieldLabel>Role</FieldLabel>
-                <Select
-                  value={values.roleId || "none"}
-                  onValueChange={(value) => updateValue("roleId", value === "none" ? "" : value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No role</SelectItem>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  control={control}
+                  name="roleId"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value || "none"}
+                      onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No role</SelectItem>
+                        {roles.map((role) => (
+                          <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 <FieldDescription>This field is optional.</FieldDescription>
               </Field>
 
@@ -257,34 +171,16 @@ export function UserFormSheet({
                   <FieldLabel htmlFor="password">
                     {mode === "create" ? "Password" : "New password"}
                   </FieldLabel>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={values.password}
-                    autoComplete='new-password'
-                    onChange={(event) => updateValue("password", event.target.value)}
-                    aria-invalid={!!errors.password}
-                  />
+                  <Input id="password" type="password" autoComplete="new-password" {...register("password")} aria-invalid={!!errors.password} />
                   <FieldDescription>
-                    {mode === "create"
-                      ? "Must be at least 6 characters."
-                      : "Leave blank if you don't want to change it."}
+                    {mode === "create" ? "Must be at least 6 characters." : "Leave blank if you don't want to change it."}
                   </FieldDescription>
-                  <FieldError>{errors.password}</FieldError>
+                  <FieldError>{errors.password?.message}</FieldError>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="passwordConfirm">Confirm password</FieldLabel>
-                  <Input
-                    id="passwordConfirm"
-                    type="password"
-                    value={values.passwordConfirm}
-                    autoComplete='new-password'
-                    onChange={(event) =>
-                      updateValue("passwordConfirm", event.target.value)
-                    }
-                    aria-invalid={!!errors.passwordConfirm}
-                  />
-                  <FieldError>{errors.passwordConfirm}</FieldError>
+                  <Input id="passwordConfirm" type="password" autoComplete="new-password" {...register("passwordConfirm")} aria-invalid={!!errors.passwordConfirm} />
+                  <FieldError>{errors.passwordConfirm?.message}</FieldError>
                 </Field>
               </div>
 
@@ -293,20 +189,11 @@ export function UserFormSheet({
           </div>
 
           <DialogFooter className="sticky bottom-0 z-10 border-t bg-white/60 backdrop-blur-sm dark:bg-slate-900/60">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Saving..."
-                : mode === "create"
-                  ? "Create user"
-                  : "Save changes"}
+              {isSubmitting ? "Saving..." : mode === "create" ? "Create user" : "Save changes"}
             </Button>
           </DialogFooter>
         </form>

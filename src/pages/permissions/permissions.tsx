@@ -44,15 +44,15 @@ export default function PermissionsPage() {
     <>
       <div className="container mx-auto space-y-4 py-6 sm:space-y-5 sm:py-8 lg:py-10">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Roles</h1>
-          <p className="text-sm text-muted-foreground">Manage roles records from the panel.</p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Permisos</h1>
+          <p className="text-sm text-muted-foreground">Manage permisos records from the panel.</p>
         </div>
 
         <DataTable
           columns={columns}
           data={data}
-          title="Rol Table"
-          addLabel="New Rol"
+          title="Permiso Table"
+          addLabel="Crear permiso"
           isLoading={isLoading}
           onAdd={actions.openCreate}
           pageCount={meta?.totalPages ?? 0}
