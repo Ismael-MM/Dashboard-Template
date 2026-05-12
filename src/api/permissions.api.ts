@@ -1,28 +1,26 @@
 import api from "@/api/axios";
 import type { PermissionsParams, PermissionRecord, PermissionOption, PermissionPayload } from '@/types/permissions';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import { createData, deleteData, getData, updateData } from './base.api';
+
+const endPoint = "/permissions";
 
 export const getPermission = async (params: PermissionsParams = {}) => {
-  const { data } = await api.get<PaginatedResponse<PermissionRecord>>("/permissions", { params });
-  return data;
+  return getData<PermissionsParams, PermissionRecord>(params,endPoint);
+};
+
+export const createPermission = async (payload: PermissionPayload) => {
+  return createData<PermissionPayload, PermissionRecord>(payload, endPoint);
+};
+
+export const updatePermission = async (id: string, payload: PermissionPayload) => {
+  return updateData<PermissionPayload, PermissionRecord>(id, payload, endPoint);
+};
+
+export const deletePermission = async (id: string) => {
+  return deleteData(id, endPoint);
 };
 
 export const getPermissionsDropdown = async (): Promise<PermissionOption[]> => {
   const { data } = await api.get<PermissionOption[]>("/permissions/list");
   return data;
-};
-
-export const createPermission = async (payload: PermissionPayload) => {
-  const { data } = await api.post<ApiResponse<PermissionRecord>>("/permissions", payload);
-  return data.data;
-};
-
-export const updatePermission = async (id: string, payload: PermissionPayload) => {
-  const { data } = await api.patch<ApiResponse<PermissionRecord>>(`/permissions/${id}`, payload);
-  return data.data;
-};
-
-export const deletePermission = async (id: string) => {
-  const { data } = await api.delete<ApiResponse<null>>(`/permissions/${id}`);
-  return data.data;
 };

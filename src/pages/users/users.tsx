@@ -10,14 +10,11 @@ import {
 import type { UserFormPayload, UserRecord, UsersParams } from '@/types/users';
 import { DataTable } from "@/components/data-table/data-table";
 import { UserFormSheet } from "@/components/users/user-form-sheet";
-import { ConfirmDeleteDialog } from "@/components/ui/confirm_delete_dialog";
-import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { UsersFilters } from '@/components/users/usersFilters';
 import { getRolesDropdown } from '@/api/roles.api';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { useCrudManager } from '@/hooks/common/useCrudManager';
 import { useDataTableQuery } from '@/hooks/common/useDataManager';
