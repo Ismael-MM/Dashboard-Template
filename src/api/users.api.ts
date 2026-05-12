@@ -1,7 +1,7 @@
 import api from "@/api/axios";
 import type { UsersParams, UserRecord, UserFormPayload } from '@/types/users';
 import type { ApiResponse } from '@/types/api';
-import { createData, deleteData, getData, updateData } from './common.api';
+import { createData, deleteData, getData, updateData } from './base.api';
 
 const endPoint = "/users"
 
